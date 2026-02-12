@@ -1,0 +1,11 @@
+# Dependency directories
+node_modules/
+frontend/node_modules/
+backend/target/
+
+# System & OS
+.DS_Store
+*.log
+.mvn/
+.idea/
+.vscode/

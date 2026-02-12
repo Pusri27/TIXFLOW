@@ -1,0 +1,70 @@
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: false
+
+spring:
+  application:
+    name: ticketing-backend
+  profiles:
+    active: dev
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://ep-wandering-water-azak9ncp.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&connectTimeout=10}
+    username: ${DB_USER:neondb_owner}
+    password: ${DB_PASS:npg_ETsdSZKt2lM4}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      connection-timeout: 10000
+      initialization-fail-timeout: -1
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        temp:
+          use_jdbc_metadata_defaults: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  redis:
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: ${SPRING_REDIS_PORT:6379}
+    password: ${SPRING_REDIS_PASSWORD:}
+  flyway:
+    enabled: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b}
+    expiration: 86400000 # 24 hours
+  booking:
+    lock-ttl-minutes: 10
+    expiry-minutes: 10
+  cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:dpytuuh9q}
+    api-key: ${CLOUDINARY_API_KEY:947388997749745}
+    api-secret: ${CLOUDINARY_API_SECRET:3V_WbaxtrvyJdsiUvWxgAaoB0IA}
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:sk_test_mock_key}
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_mock_key}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_mock_secret}
