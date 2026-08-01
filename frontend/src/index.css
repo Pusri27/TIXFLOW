@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #07080c;
+    color: #f3f4f6;
+    @apply antialiased selection:bg-indigo-500 selection:text-white min-h-screen tracking-tight;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #1f2430;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333b4f;
+}
+
+/* Subtle Shimmer & Glow Effects */
+.bg-radial-gradient {
+  background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.12) 0%, rgba(7, 8, 12, 0) 70%);
+}
+
+.bg-glass {
+  background: rgba(15, 17, 25, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.ticket-notch-left {
+  mask-image: radial-gradient(circle 12px at left center, transparent 99%, black 100%);
+}
+
+.ticket-notch-right {
+  mask-image: radial-gradient(circle 12px at right center, transparent 99%, black 100%);
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
