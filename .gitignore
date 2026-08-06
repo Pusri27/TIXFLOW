@@ -1,11 +1,21 @@
-# Dependency directories
-node_modules/
+# Node modules
+**/node_modules/
+**/dist/
+frontend/dist/
 frontend/node_modules/
+
+# Maven target
+**/target/
 backend/target/
 
-# System & OS
-.DS_Store
-*.log
-.mvn/
-.idea/
+# IDE files
 .vscode/
+.idea/
+*.iml
+.DS_Store
+
+# Maven wrapper binaries
+.maven/
+
+# Temp & Log files
+*.log

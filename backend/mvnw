@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+DIR="$( cd "$( dirname "$0" )" && pwd )"
+MAVEN_BIN="$DIR/../.maven/apache-maven-3.9.6/bin/mvn"
+
+if [ -x "$MAVEN_BIN" ]; then
+    exec "$MAVEN_BIN" "$@"
+elif command -v mvn >/dev/null 2>&1; then
+    exec mvn "$@"
+else
+    echo "Maven binary not found at $MAVEN_BIN"
+    exit 1
+fi
