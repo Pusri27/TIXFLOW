@@ -25,7 +25,7 @@ COPY --from=builder /app/dist .
 # Copy Nginx SPA Configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose Port 8080 for Cloud Run
+# Expose Port 8080 for local Docker / container runtime
 EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]

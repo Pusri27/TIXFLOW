@@ -24,7 +24,7 @@ export default function EventDetailPage() {
     fetchEventDetails();
     fetchSeatMap();
 
-    // Poll every 15 seconds to sync seat availability (WebSocket not supported on Cloud Run)
+    // Poll every 15 seconds to sync seat availability across free-tier deployments
     const pollInterval = setInterval(() => {
       fetchSeatMap();
     }, 15000);

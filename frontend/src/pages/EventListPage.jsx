@@ -178,10 +178,22 @@ export default function EventListPage() {
 
       {/* Event Cards Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-96 bg-[#11131c] rounded-3xl animate-pulse border border-white/10" />
-          ))}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 text-indigo-400 text-xs font-semibold animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
+            <span>Connecting to TIXFLOW engine &amp; loading event catalog...</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-96 bg-[#11131c]/60 rounded-3xl animate-pulse border border-white/10 flex flex-col p-6 justify-between">
+                <div className="w-full h-48 bg-white/5 rounded-2xl" />
+                <div className="space-y-3 mt-4">
+                  <div className="w-3/4 h-5 bg-white/10 rounded-lg" />
+                  <div className="w-1/2 h-4 bg-white/5 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : filteredEvents.length === 0 ? (
         <div className="text-center py-24 bg-[#0d0e15] rounded-3xl border border-white/10">

@@ -20,8 +20,8 @@ COPY --from=builder /app/target/*.jar app.jar
 # Expose HTTP Port
 EXPOSE 8080
 
-# Configure JVM memory limits for Cloud Run environment
-ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:+UseG1GC"
+# Configure JVM memory limits for Render Free Tier (512MB RAM)
+ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
 
 # Execute application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

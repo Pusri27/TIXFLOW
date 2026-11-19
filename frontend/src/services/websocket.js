@@ -1,6 +1,4 @@
-// WebSocket real-time updates are disabled for Cloud Run compatibility.
-// Cloud Run does not support persistent WebSocket connections (HTTP/2 based).
-// Seat map updates are handled via periodic polling instead.
+// Real-time seat map updates use periodic HTTP polling for free-tier serverless compatibility.
 
 export class SeatWebSocketService {
   constructor(eventId, onMessageCallback) {
@@ -10,8 +8,7 @@ export class SeatWebSocketService {
   }
 
   connect() {
-    // No-op: WebSocket not supported on Cloud Run.
-    // EventDetailPage handles polling directly.
+    // No-op: EventDetailPage handles periodic seat-map polling directly.
   }
 
   disconnect() {

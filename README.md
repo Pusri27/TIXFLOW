@@ -5,16 +5,18 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon%20DB-blueviolet.svg)](https://neon.tech/)
 [![Redis](https://img.shields.io/badge/Redis-Upstash-red.svg)](https://upstash.com/)
 [![Stripe](https://img.shields.io/badge/Stripe-Sandbox-indigo.svg)](https://stripe.com/)
-[![Google Cloud Run](https://img.shields.io/badge/Google%20Cloud-Run-4285F4.svg)](https://cloud.google.com/run)
+[![Vercel](https://img.shields.io/badge/Frontend-Vercel_Free-000000.svg)](https://vercel.com/)
+[![Render](https://img.shields.io/badge/Backend-Render_Free-46E3B7.svg)](https://render.com/)
 
 **TIXFLOW** is a high-concurrency, enterprise-grade event reservation and gatekeeper management system. Designed to handle high-traffic ticket rushes without race conditions, TIXFLOW features atomic seat locking, official Stripe Sandbox Checkout integration, dynamic anti-screenshot QR codes, Cloudinary-hosted PDF e-tickets, peer-to-peer pass transfers, and live gatekeeper entrance scanning.
 
 ---
 
-## 🌐 Production Live Demos
+## 🌐 Free-Tier Cloud Deployment Architecture (Zero GCP)
 
-- **Frontend Web Application**: [https://tixflow-frontend-295200560470.asia-southeast1.run.app](https://tixflow-frontend-295200560470.asia-southeast1.run.app)
-- **Backend API Engine**: [https://tixflow-backend-295200560470.asia-southeast1.run.app](https://tixflow-backend-295200560470.asia-southeast1.run.app)
+- **Frontend Web Application**: Deployed on **Vercel Hobby Plan** (Free) using `frontend/` root directory (`frontend/vercel.json`).
+- **Backend API Engine**: Deployed on **Render Free Web Service (Docker)** via [`render.yaml`](./render.yaml) (`backend/Dockerfile`).
+- **Supporting Free Services**: Neon Serverless PostgreSQL, Upstash Redis, Cloudinary Free Tier, Stripe Sandbox.
 
 ---
 
@@ -50,7 +52,7 @@
 - **Database & Cache**: Neon Serverless PostgreSQL, Upstash Redis.
 - **Cloud Storage & Utilities**: Cloudinary Java SDK, iText PDF Engine, ZXing QR Generator, Stripe Java SDK.
 - **Frontend App**: React 18, Vite, Tailwind CSS v4, Lucide Icons, Axios.
-- **Cloud Hosting & DevOps**: Google Cloud Run, Google Artifact Registry, Google Cloud Build, Docker, NGINX.
+- **Cloud Hosting & DevOps**: Vercel (Frontend), Render Free Tier (Backend Docker), Docker, GitHub.
 
 ---
 

@@ -35,7 +35,7 @@ public class BookingService {
     @Value("${app.booking.expiry-minutes:10}")
     private int expiryMinutes;
 
-    @Value("${app.frontend.url:https://tixflow-frontend-bauggozpgq-as.a.run.app}")
+    @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
     @Value("${app.stripe.secret-key:}")
