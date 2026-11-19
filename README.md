@@ -6,16 +6,16 @@
 [![Redis](https://img.shields.io/badge/Redis-Upstash-red.svg)](https://upstash.com/)
 [![Stripe](https://img.shields.io/badge/Stripe-Sandbox-indigo.svg)](https://stripe.com/)
 [![Vercel](https://img.shields.io/badge/Frontend-Vercel_Free-000000.svg)](https://vercel.com/)
-[![Render](https://img.shields.io/badge/Backend-Render_Free-46E3B7.svg)](https://render.com/)
+[![Hugging Face Spaces](https://img.shields.io/badge/Backend-HF_Spaces_Free-FFD21E.svg)](https://huggingface.co/spaces)
 
 **TIXFLOW** is a high-concurrency, enterprise-grade event reservation and gatekeeper management system. Designed to handle high-traffic ticket rushes without race conditions, TIXFLOW features atomic seat locking, official Stripe Sandbox Checkout integration, dynamic anti-screenshot QR codes, Cloudinary-hosted PDF e-tickets, peer-to-peer pass transfers, and live gatekeeper entrance scanning.
 
 ---
 
-## 🌐 Free-Tier Cloud Deployment Architecture (Zero GCP)
+## 🌐 Free-Tier Cloud Deployment Architecture (Zero GCP, Zero Credit Card)
 
-- **Frontend Web Application**: Deployed on **Vercel Hobby Plan** (Free) using `frontend/` root directory (`frontend/vercel.json`).
-- **Backend API Engine**: Deployed on **Render Free Web Service (Docker)** via [`render.yaml`](./render.yaml) (`backend/Dockerfile`).
+- **Frontend Web Application**: Deployed on **Vercel Hobby Plan** (Free) → [https://tixflow-web-lac.vercel.app](https://tixflow-web-lac.vercel.app)
+- **Backend API Engine**: Deployed on **Hugging Face Spaces (Free Docker SDK — 16GB RAM, 2 vCPU)** using `backend/Dockerfile` (port `7860`).
 - **Supporting Free Services**: Neon Serverless PostgreSQL, Upstash Redis, Cloudinary Free Tier, Stripe Sandbox.
 
 ---
@@ -52,7 +52,7 @@
 - **Database & Cache**: Neon Serverless PostgreSQL, Upstash Redis.
 - **Cloud Storage & Utilities**: Cloudinary Java SDK, iText PDF Engine, ZXing QR Generator, Stripe Java SDK.
 - **Frontend App**: React 18, Vite, Tailwind CSS v4, Lucide Icons, Axios.
-- **Cloud Hosting & DevOps**: Vercel (Frontend), Render Free Tier (Backend Docker), Docker, GitHub.
+- **Cloud Hosting & DevOps**: Vercel (Frontend), Hugging Face Spaces Free Docker (Backend), Docker, GitHub.
 
 ---
 
