@@ -18,11 +18,9 @@ services:
       - key: DB_PASS
         sync: false
       - key: SPRING_REDIS_HOST
-        sync: false
+        value: "localhost"
       - key: SPRING_REDIS_PORT
         value: "6379"
-      - key: SPRING_REDIS_PASSWORD
-        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: CLOUDINARY_CLOUD_NAME
@@ -35,7 +33,5 @@ services:
         sync: false
       - key: STRIPE_PUBLISHABLE_KEY
         sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
       - key: APP_FRONTEND_URL
-        sync: false
+        value: "https://tixflow-web-lac.vercel.app"
