@@ -28,8 +28,8 @@ USER user
 ENV PORT=7860
 EXPOSE 7860
 
-# Configure JVM memory limits (fits comfortably on HF Spaces 16GB RAM or Render 512MB+)
-ENV JAVA_OPTS="-Xms256m -Xmx1024m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
+# Configure JVM memory limits (safe for 512MB RAM Free Tier such as Render)
+ENV JAVA_OPTS="-Xms128m -Xmx384m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
 
 # Execute application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
