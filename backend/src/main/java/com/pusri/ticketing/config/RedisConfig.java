@@ -25,6 +25,13 @@ public class RedisConfig {
 
     @Bean
     public RedissonClient redissonClient() {
+        // Fast-path for serverless / container deployments without external Redis (avoids cold-start timeout)
+        if (redisHost == null || redisHost.trim().isEmpty()
+                || ("localhost".equalsIgnoreCase(redisHost.trim()) && (redisPassword == null || redisPassword.isEmpty()))) {
+            log.info("No external Redis configured (host={}), using instant DB/in-memory lock fallback", redisHost);
+            return createFallbackClient();
+        }
+
         Config config = new Config();
         String address;
         if (redisHost.startsWith("redis://") || redisHost.startsWith("rediss://")) {
@@ -37,10 +44,12 @@ public class RedisConfig {
 
         var serverConfig = config.useSingleServer()
                 .setAddress(address)
-                .setConnectTimeout(3000)
+                .setConnectionPoolSize(4)
+                .setConnectionMinimumIdleSize(1)
+                .setConnectTimeout(2000)
                 .setTimeout(2000)
                 .setRetryAttempts(1)
-                .setRetryInterval(1000);
+                .setRetryInterval(500);
 
         if (redisPassword != null && !redisPassword.isEmpty()) {
             serverConfig.setPassword(redisPassword);
@@ -52,27 +61,31 @@ public class RedisConfig {
             return client;
         } catch (Exception e) {
             log.warn("Redis connection to {} failed ({}), fallback to in-memory/DB lock", address, e.getMessage());
-            return (RedissonClient) Proxy.newProxyInstance(
-                    RedissonClient.class.getClassLoader(),
-                    new Class<?>[]{RedissonClient.class},
-                    (proxy, method, args) -> {
-                        String name = method.getName();
-                        if ("hashCode".equals(name)) {
-                            return System.identityHashCode(proxy);
-                        }
-                        if ("equals".equals(name)) {
-                            return proxy == (args != null && args.length > 0 ? args[0] : null);
-                        }
-                        if ("toString".equals(name)) {
-                            return "FallbackRedissonClientProxy";
-                        }
-                        if ("isShutdown".equals(name) || "isShuttingDown".equals(name)) {
-                            return Boolean.TRUE;
-                        }
-                        return null;
-                    }
-            );
+            return createFallbackClient();
         }
+    }
+
+    private RedissonClient createFallbackClient() {
+        return (RedissonClient) Proxy.newProxyInstance(
+                RedissonClient.class.getClassLoader(),
+                new Class<?>[]{RedissonClient.class},
+                (proxy, method, args) -> {
+                    String name = method.getName();
+                    if ("hashCode".equals(name)) {
+                        return System.identityHashCode(proxy);
+                    }
+                    if ("equals".equals(name)) {
+                        return proxy == (args != null && args.length > 0 ? args[0] : null);
+                    }
+                    if ("toString".equals(name)) {
+                        return "FallbackRedissonClientProxy";
+                    }
+                    if ("isShutdown".equals(name) || "isShuttingDown".equals(name)) {
+                        return Boolean.TRUE;
+                    }
+                    return null;
+                }
+        );
     }
 }
 
