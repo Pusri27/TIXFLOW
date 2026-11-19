@@ -1,0 +1,23 @@
+# Stage 1: Build Java Spring Boot Application
+FROM maven:3.9.6-eclipse-temurin-11-alpine AS builder
+WORKDIR /app
+
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+RUN mvn package -DskipTests -B
+
+# Stage 2: Vercel Container Function Runtime (Port 80, Hobby Plan 2GB RAM / 1 vCPU)
+FROM eclipse-temurin:11-jre-alpine
+WORKDIR /app
+
+COPY --from=builder /app/target/*.jar app.jar
+
+# Vercel Container Functions route HTTP traffic to port 80 by default (or $PORT)
+ENV PORT=80
+EXPOSE 80
+
+ENV JAVA_OPTS="-Xms256m -Xmx1024m -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError"
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
