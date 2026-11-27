@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.UNAUTHORIZED.value());
         body.put("error", "Unauthorized");
-        body.put("message", "Email atau password salah!");
+        body.put("message", "Invalid email or password.");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 

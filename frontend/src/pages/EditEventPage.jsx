@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { adminApi, eventApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
-import { Image as ImageIcon, ArrowLeft, Save } from 'lucide-react';
+import { Image as ImageIcon, ArrowLeft, Save, MapPin } from 'lucide-react';
 
 const FALLBACK_POSTER =
   'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=80';
+
+function formatLocalDateTimeParam(val) {
+  if (!val) return null;
+  return val.length === 16 ? `${val}:00` : val;
+}
 
 export default function EditEventPage() {
   const { id } = useParams();
@@ -13,10 +18,12 @@ export default function EditEventPage() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [venues, setVenues] = useState([]);
   const [form, setForm] = useState({
     name: '',
     description: '',
     category: 'CONCERT',
+    venueId: '1',
     posterUrl: '',
     startTime: '',
     endTime: '',
@@ -25,6 +32,10 @@ export default function EditEventPage() {
   });
 
   useEffect(() => {
+    eventApi
+      .getVenues()
+      .then((res) => setVenues(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {});
     fetchEventDetails();
   }, [id]);
 
@@ -36,6 +47,7 @@ export default function EditEventPage() {
         name: evt.name || '',
         description: evt.description || '',
         category: evt.category || 'CONCERT',
+        venueId: evt.venue?.id ? String(evt.venue.id) : '1',
         posterUrl: evt.posterUrl || '',
         startTime: evt.startTime ? evt.startTime.substring(0, 16) : '',
         endTime: evt.endTime ? evt.endTime.substring(0, 16) : '',
@@ -68,8 +80,9 @@ export default function EditEventPage() {
     try {
       await adminApi.updateEvent(id, {
         ...form,
-        startTime: form.startTime ? new Date(form.startTime).toISOString() : null,
-        endTime: form.endTime ? new Date(form.endTime).toISOString() : null,
+        venueId: Number(form.venueId),
+        startTime: formatLocalDateTimeParam(form.startTime),
+        endTime: formatLocalDateTimeParam(form.endTime),
       });
       showToast({
         type: 'success',
@@ -120,7 +133,7 @@ export default function EditEventPage() {
           Edit Event Details
         </h1>
         <p className="text-[#6B7280] text-sm mt-1">
-          Update schedule, poster image, category, or event description.
+          Update schedule, venue location, poster image, category, or event description.
         </p>
       </div>
 
@@ -162,18 +175,49 @@ export default function EditEventPage() {
 
           <div>
             <label className="block text-xs font-bold text-[#374151] mb-2">
-              Poster Image URL
+              Venue &amp; City
             </label>
             <div className="relative">
-              <ImageIcon className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2" />
-              <input
-                type="url"
-                name="posterUrl"
-                value={form.posterUrl}
+              <MapPin className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                name="venueId"
+                value={form.venueId}
                 onChange={handleChange}
                 className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl pl-11 pr-4 py-3.5 text-[#111827] text-sm outline-none"
-              />
+              >
+                {venues.length > 0 ? (
+                  venues.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name} — {v.city}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="1">Jakarta International Stadium — Jakarta</option>
+                    <option value="2">Grand XXI Cinema Center — Jakarta</option>
+                    <option value="3">Bandung Convention Center — Bandung</option>
+                    <option value="4">Trans Convention Centre — Bandung</option>
+                    <option value="5">Jogja Expo Center (JEC) — Yogyakarta</option>
+                  </>
+                )}
+              </select>
             </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-[#374151] mb-2">
+            Poster Image URL
+          </label>
+          <div className="relative">
+            <ImageIcon className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2" />
+            <input
+              type="url"
+              name="posterUrl"
+              value={form.posterUrl}
+              onChange={handleChange}
+              className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl pl-11 pr-4 py-3.5 text-[#111827] text-sm outline-none"
+            />
           </div>
         </div>
 

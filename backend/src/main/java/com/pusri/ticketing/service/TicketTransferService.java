@@ -23,33 +23,33 @@ public class TicketTransferService {
     @Transactional
     public void transferTicket(Long ticketId, String fromEmail, String recipientEmail) {
         User fromUser = userRepository.findByEmail(fromEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User pengirim tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("Sender account not found."));
 
         User recipient = userRepository.findByEmail(recipientEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User penerima dengan email " + recipientEmail + " tidak ditemukan!"));
+                .orElseThrow(() -> new IllegalArgumentException("No Tixflow account found for " + recipientEmail + ". Ask your friend to sign up first."));
 
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Tiket tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("Ticket not found."));
 
-        User currentOwner = ticket.getCurrentOwner() != null ? ticket.getCurrentOwner() : ticket.getBookingItem().getBooking().getUser();
+        User currentOwner = ticket.getCurrentOwner() != null
+                ? ticket.getCurrentOwner()
+                : ticket.getBookingItem().getBooking().getUser();
 
         if (!currentOwner.getId().equals(fromUser.getId())) {
-            throw new IllegalArgumentException("Anda bukan pemilik sah dari tiket ini!");
+            throw new IllegalArgumentException("You do not own this ticket.");
         }
 
         if (Boolean.TRUE.equals(ticket.getIsUsed())) {
-            throw new IllegalStateException("Tiket yang sudah discan/digunakan tidak dapat ditransfer!");
+            throw new IllegalStateException("Tickets that have already been scanned at the gate cannot be transferred.");
         }
 
         if (fromUser.getId().equals(recipient.getId())) {
-            throw new IllegalArgumentException("Tidak dapat mentransfer tiket ke akun Anda sendiri");
+            throw new IllegalArgumentException("You cannot transfer a ticket to your own account.");
         }
 
-        // Update ownership
         ticket.setCurrentOwner(recipient);
-        ticketRepository.save(ticket);
+        ticketRepository.saveAndFlush(ticket);
 
-        // Audit Log
         TicketTransfer transfer = TicketTransfer.builder()
                 .ticket(ticket)
                 .fromUser(fromUser)
@@ -57,6 +57,6 @@ public class TicketTransferService {
                 .build();
         ticketTransferRepository.save(transfer);
 
-        log.info("Tiket {} berhasil ditransfer dari {} ke {}", ticket.getTicketCode(), fromEmail, recipientEmail);
+        log.info("Ticket {} transferred from {} to {}", ticket.getTicketCode(), fromEmail, recipientEmail);
     }
 }

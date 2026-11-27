@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import SeatMap from '../components/SeatMap';
 import WaitingRoomModal from '../components/WaitingRoomModal';
 import { formatPrice } from '../utils/formatPrice';
-import { Calendar, MapPin, AlertCircle, Users, ArrowLeft, ArrowRight, X, ShieldCheck } from 'lucide-react';
+import { Calendar, MapPin, AlertCircle, Users, ArrowLeft, ArrowRight, X, ShieldCheck, Compass } from 'lucide-react';
 
 const FALLBACK_POSTER =
   'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=80';
@@ -16,6 +16,7 @@ export default function EventDetailPage() {
   const { user } = useAuth();
 
   const [event, setEvent] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [seatMap, setSeatMap] = useState(null);
   const [selectedSeatIds, setSelectedSeatIds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,8 +26,24 @@ export default function EventDetailPage() {
   const [queueToken, setQueueToken] = useState(null);
 
   useEffect(() => {
+    setNotFound(false);
+    setLoading(true);
     fetchEventDetails();
     fetchSeatMap();
+
+    // Restore any seats selected right before redirecting a guest to sign in
+    try {
+      const savedSeats = sessionStorage.getItem(`tixflow_pending_seats_${id}`);
+      if (savedSeats) {
+        const parsed = JSON.parse(savedSeats);
+        if (Array.isArray(parsed)) {
+          setSelectedSeatIds(parsed);
+        }
+        sessionStorage.removeItem(`tixflow_pending_seats_${id}`);
+      }
+    } catch {
+      // Ignore storage parse issues
+    }
 
     const pollInterval = setInterval(() => {
       fetchSeatMap();
@@ -41,6 +58,7 @@ export default function EventDetailPage() {
       setEvent(res.data);
     } catch (err) {
       console.error(err);
+      setNotFound(true);
     }
   };
 
@@ -48,6 +66,15 @@ export default function EventDetailPage() {
     try {
       const res = await eventApi.getSeats(id);
       setSeatMap(res.data);
+      // Filter out any restored seat IDs that are no longer available
+      if (res.data?.seats) {
+        const availableSet = new Set(
+          res.data.seats
+            .filter((s) => s.status === 'AVAILABLE' && !s.isLocked)
+            .map((s) => s.id)
+        );
+        setSelectedSeatIds((prev) => prev.filter((sid) => availableSet.has(sid)));
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -63,13 +90,18 @@ export default function EventDetailPage() {
   };
 
   const handleInitiateBooking = async () => {
-    if (!user) {
-      navigate('/login');
+    if (selectedSeatIds.length === 0) {
+      setErrorMessage('Please choose at least one seat on the stadium map.');
       return;
     }
 
-    if (selectedSeatIds.length === 0) {
-      setErrorMessage('Please choose at least one seat on the stadium map.');
+    if (!user) {
+      try {
+        sessionStorage.setItem(`tixflow_pending_seats_${id}`, JSON.stringify(selectedSeatIds));
+      } catch {
+        // Ignore storage errors
+      }
+      navigate('/login', { state: { from: `/events/${id}` } });
       return;
     }
 
@@ -104,7 +136,7 @@ export default function EventDetailPage() {
   const selectedSeatsInfo = selectedSeatIds.map(getSeatDetails).filter(Boolean);
   const totalAmount = selectedSeatsInfo.reduce((sum, item) => sum + item.price, 0);
 
-  if (loading || !event) {
+  if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-24 text-center">
         <div className="w-8 h-8 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-3" />
@@ -113,10 +145,40 @@ export default function EventDetailPage() {
     );
   }
 
+  if (notFound || !event) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-24 text-center">
+        <div className="market-card rounded-3xl p-8 sm:p-10 space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-[#FFF1F2] text-[#E11D48] flex items-center justify-center mx-auto">
+            <Compass className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <span className="inline-block text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3 py-1 rounded-full">
+              Event Unavailable
+            </span>
+            <h1 className="font-display text-2xl font-extrabold text-[#111827]">
+              Event Not Found
+            </h1>
+            <p className="text-sm text-[#6B7280] leading-relaxed">
+              This event may have ended or been removed from the schedule. Check out our upcoming live experiences instead.
+            </p>
+          </div>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold px-6 py-3 rounded-full text-sm shadow-sm transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Browse Upcoming Events</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10 space-y-8">
       {/* Top Navigation Row */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-sm font-semibold text-[#4B5563] hover:text-[#E11D48] transition-colors"
@@ -195,8 +257,8 @@ export default function EventDetailPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-[#6B7280]">Venue</p>
-                    <p className="text-sm font-bold text-[#111827] truncate">
-                      {event.venue.name}, {event.venue.city}
+                    <p className="text-sm font-bold text-[#111827] leading-snug">
+                      {`${event.venue.name}, ${event.venue.city}`}
                     </p>
                   </div>
                 </div>
@@ -265,6 +327,7 @@ export default function EventDetailPage() {
                       <button
                         onClick={() => handleToggleSeat(seat.id)}
                         className="text-[#9CA3AF] hover:text-[#E11D48] p-1 rounded-full hover:bg-white cursor-pointer"
+                        aria-label={`Remove seat ${seat.rowLabel}-${seat.seatNumber}`}
                         title="Remove seat"
                       >
                         <X className="w-3.5 h-3.5" />

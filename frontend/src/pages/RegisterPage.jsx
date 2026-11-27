@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, User, Phone, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
 
@@ -13,6 +13,8 @@ export default function RegisterPage() {
 
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = location.state?.from || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +23,7 @@ export default function RegisterPage() {
 
     try {
       await register(name, email, password, phone);
-      navigate('/');
+      navigate(returnTo, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Email may already be registered.');
     } finally {
@@ -159,7 +161,7 @@ export default function RegisterPage() {
             <div className="border-t border-[#F1F3F7] pt-5 text-center">
               <p className="text-xs sm:text-sm text-[#6B7280]">
                 Already have an account?{' '}
-                <Link to="/login" className="text-[#E11D48] hover:underline font-bold">
+                <Link to="/login" state={location.state} className="text-[#E11D48] hover:underline font-bold">
                   Sign in
                 </Link>
               </p>

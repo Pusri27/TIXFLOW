@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 
 @Component
@@ -30,63 +31,64 @@ public class PdfTicketGenerator {
         PdfDocument pdfDoc = new PdfDocument(writer);
         Document doc = new Document(pdfDoc);
 
-        // Styling colors
-        DeviceRgb primaryColor = new DeviceRgb(59, 130, 246); // Blue #3B82F6
+        DeviceRgb brandCoral = new DeviceRgb(225, 29, 72); // #E11D48
 
-        // Header Title
-        Paragraph header = new Paragraph("OFFICIAL E-TICKET")
-                .setFontSize(22)
+        Paragraph header = new Paragraph("TIXFLOW OFFICIAL E-TICKET")
+                .setFontSize(20)
                 .setBold()
-                .setFontColor(primaryColor)
+                .setFontColor(brandCoral)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginBottom(10);
+                .setMarginBottom(6);
         doc.add(header);
 
-        Paragraph ticketCodePara = new Paragraph("Ticket Code: " + ticket.getTicketCode())
+        Paragraph ticketCodePara = new Paragraph("Pass Code: " + ticket.getTicketCode())
                 .setFontSize(12)
                 .setBold()
                 .setTextAlignment(TextAlignment.CENTER)
                 .setMarginBottom(20);
         doc.add(ticketCodePara);
 
-        // Main Information Table
-        Table table = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
+        Table table = new Table(UnitValue.createPercentArray(new float[]{52, 48}))
                 .useAllAvailableWidth()
-                .setMarginBottom(20);
+                .setMarginBottom(22);
 
         var bookingItem = ticket.getBookingItem();
         var booking = bookingItem.getBooking();
         var event = booking.getEvent();
-        var user = booking.getUser();
+        var holder = ticket.getCurrentOwner() != null ? ticket.getCurrentOwner() : booking.getUser();
         var seat = bookingItem.getSeat();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm");
 
-        table.addCell(new Paragraph("EVENT DETAILS\n\nEvent: " + event.getName()
+        BigDecimal snap = bookingItem.getPriceSnapshot() != null ? bookingItem.getPriceSnapshot() : BigDecimal.ZERO;
+        String formattedPrice = snap.longValue() >= 10000L
+                ? "IDR " + String.format("%,d", snap.longValue())
+                : "$" + String.format("%,.2f", snap);
+
+        table.addCell(new Paragraph("EVENT INFORMATION\n\nEvent: " + event.getName()
                 + "\nCategory: " + event.getCategory()
-                + "\nDate: " + event.getStartTime().format(formatter)
-                + "\nVenue: " + (event.getVenue() != null ? event.getVenue().getName() + ", " + event.getVenue().getCity() : "N/A"))
+                + "\nDate & Doors: " + event.getStartTime().format(formatter)
+                + "\nVenue: " + (event.getVenue() != null ? event.getVenue().getName() + ", " + event.getVenue().getCity() : "TBA"))
                 .setFontSize(10));
 
-        table.addCell(new Paragraph("PASSENGER & SEAT\n\nName: " + user.getName()
-                + "\nEmail: " + user.getEmail()
-                + "\nRow: " + seat.getRowLabel()
-                + "\nSeat Number: " + seat.getSeatNumber()
-                + "\nPrice: $" + String.format("%,.2f", bookingItem.getPriceSnapshot()))
+        table.addCell(new Paragraph("TICKET HOLDER & SEAT\n\nHolder: " + holder.getName()
+                + "\nEmail: " + holder.getEmail()
+                + "\nSection: " + (seat.getCategory() != null ? seat.getCategory().getName() : "Standard")
+                + "\nRow " + seat.getRowLabel() + " - Seat #" + seat.getSeatNumber()
+                + "\nPrice: " + formattedPrice)
                 .setFontSize(10));
 
         doc.add(table);
 
-        // Generate QR Code PNG
-        byte[] qrBytes = qrCodeGenerator.generateQrCodeImage(ticket.getTicketCode(), 150, 150);
+        byte[] qrBytes = qrCodeGenerator.generateQrCodeImage(ticket.getTicketCode(), 160, 160);
         Image qrImage = new Image(ImageDataFactory.create(qrBytes));
         qrImage.setHorizontalAlignment(com.itextpdf.layout.properties.HorizontalAlignment.CENTER);
         doc.add(qrImage);
 
-        Paragraph footer = new Paragraph("Please present this QR Code at the venue entrance gate.\nPowered by TIXFLOW Ticketing Engine.")
+        Paragraph footer = new Paragraph("Present this pass or your live rotating QR in the Tixflow web wallet at the venue entrance.")
                 .setFontSize(9)
                 .setFontColor(ColorConstants.GRAY)
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginTop(15);
+                .setMarginTop(16);
         doc.add(footer);
 
         doc.close();

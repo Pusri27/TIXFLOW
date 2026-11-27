@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, AlertCircle, Eye, EyeOff, ArrowRight, Ticket, UserCheck, ShieldCheck } from 'lucide-react';
 
@@ -12,6 +12,8 @@ export default function LoginPage() {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = location.state?.from || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +22,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      navigate('/');
+      navigate(returnTo, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password.');
     } finally {
@@ -166,7 +168,7 @@ export default function LoginPage() {
             <div className="border-t border-[#F1F3F7] pt-5 text-center">
               <p className="text-xs sm:text-sm text-[#6B7280]">
                 Don&apos;t have an account?{' '}
-                <Link to="/register" className="text-[#E11D48] hover:underline font-bold">
+                <Link to="/register" state={location.state} className="text-[#E11D48] hover:underline font-bold">
                   Sign up for free
                 </Link>
               </p>

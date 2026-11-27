@@ -2,17 +2,18 @@ package com.pusri.ticketing.service;
 
 import com.pusri.ticketing.dto.response.EventResponse;
 import com.pusri.ticketing.dto.response.SeatMapResponse;
-import com.pusri.ticketing.entity.Event;
-import com.pusri.ticketing.entity.EventCategory;
-import com.pusri.ticketing.entity.Seat;
+import com.pusri.ticketing.entity.*;
+import com.pusri.ticketing.repository.BookingRepository;
 import com.pusri.ticketing.repository.EventRepository;
-import com.pusri.ticketing.repository.SeatRepository;
 import com.pusri.ticketing.repository.SeatCategoryRepository;
+import com.pusri.ticketing.repository.SeatRepository;
 import com.pusri.ticketing.repository.VenueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,8 @@ public class EventService {
     private final SeatLockService seatLockService;
     private final VenueRepository venueRepository;
     private final SeatCategoryRepository seatCategoryRepository;
+    private final BookingRepository bookingRepository;
+    private final BookingService bookingService;
 
     @Transactional(readOnly = true)
     public List<EventResponse> getAllEvents(String category) {
@@ -44,16 +47,35 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public EventResponse getEventById(Long id) {
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Event tidak ditemukan dengan ID: " + id));
-        return mapToEventResponse(event);
+    public List<EventResponse.VenueDto> getAllVenues() {
+        return venueRepository.findAll().stream()
+                .map(v -> EventResponse.VenueDto.builder()
+                        .id(v.getId())
+                        .name(v.getName())
+                        .address(v.getAddress())
+                        .city(v.getCity())
+                        .totalCapacity(v.getTotalCapacity())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
+    public EventResponse getEventById(Long id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found with ID: " + id));
+        return mapToEventResponse(event);
+    }
+
+    @Transactional
     public SeatMapResponse getSeatMap(Long eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event tidak ditemukan dengan ID: " + eventId));
+                .orElseThrow(() -> new IllegalArgumentException("Event not found with ID: " + eventId));
+
+        // Lazily release any expired PENDING bookings so serverless cold starts never leave stale HELD seats
+        List<Booking> expired = bookingRepository.findExpiredBookings(BookingStatus.PENDING, LocalDateTime.now());
+        for (Booking exp : expired) {
+            bookingService.cancelBookingInternal(exp);
+        }
 
         List<Seat> seats = seatRepository.findByEventIdOrderByRowLabelAscSeatNumberAsc(eventId);
 
@@ -89,7 +111,7 @@ public class EventService {
 
     @Transactional
     public EventResponse createEvent(com.pusri.ticketing.dto.request.CreateEventRequest req) {
-        com.pusri.ticketing.entity.Venue venue = null;
+        Venue venue = null;
         if (req.getVenueId() != null) {
             venue = venueRepository.findById(req.getVenueId()).orElse(null);
         }
@@ -106,10 +128,12 @@ public class EventService {
                 .name(req.getName())
                 .description(req.getDescription())
                 .category(cat)
-                .posterUrl(req.getPosterUrl() != null && !req.getPosterUrl().isEmpty() ? req.getPosterUrl() : "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=80")
-                .startTime(req.getStartTime() != null ? req.getStartTime() : java.time.LocalDateTime.now().plusDays(7))
-                .endTime(req.getEndTime() != null ? req.getEndTime() : java.time.LocalDateTime.now().plusDays(7).plusHours(3))
-                .status(com.pusri.ticketing.entity.EventStatus.UPCOMING)
+                .posterUrl(req.getPosterUrl() != null && !req.getPosterUrl().isEmpty()
+                        ? req.getPosterUrl()
+                        : "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=80")
+                .startTime(req.getStartTime() != null ? req.getStartTime() : LocalDateTime.now().plusDays(7))
+                .endTime(req.getEndTime() != null ? req.getEndTime() : LocalDateTime.now().plusDays(7).plusHours(3))
+                .status(EventStatus.UPCOMING)
                 .venue(venue)
                 .isQueueEnabled(req.getIsQueueEnabled() != null ? req.getIsQueueEnabled() : true)
                 .dynamicPricingEnabled(req.getDynamicPricingEnabled() != null ? req.getDynamicPricingEnabled() : false)
@@ -117,9 +141,8 @@ public class EventService {
 
         Event saved = eventRepository.save(event);
 
-        // Auto-generate VIP and Regular Seat Categories
-        com.pusri.ticketing.entity.SeatCategory vipCat = seatCategoryRepository.save(
-                com.pusri.ticketing.entity.SeatCategory.builder()
+        SeatCategory vipCat = seatCategoryRepository.save(
+                SeatCategory.builder()
                         .event(saved)
                         .name("VIP Tier")
                         .price(req.getVipPrice() != null ? req.getVipPrice() : new java.math.BigDecimal("1500000.00"))
@@ -127,8 +150,8 @@ public class EventService {
                         .build()
         );
 
-        com.pusri.ticketing.entity.SeatCategory regCat = seatCategoryRepository.save(
-                com.pusri.ticketing.entity.SeatCategory.builder()
+        SeatCategory regCat = seatCategoryRepository.save(
+                SeatCategory.builder()
                         .event(saved)
                         .name("Regular Tier")
                         .price(req.getRegularPrice() != null ? req.getRegularPrice() : new java.math.BigDecimal("750000.00"))
@@ -136,11 +159,10 @@ public class EventService {
                         .build()
         );
 
-        // Auto-generate 24 seats (Rows A, B for VIP; Rows C, D for Regular) in a single batch save
         String[] rows = {"A", "B", "C", "D"};
-        java.util.List<Seat> seatsBatch = new java.util.ArrayList<>(24);
+        List<Seat> seatsBatch = new ArrayList<>(24);
         for (String row : rows) {
-            com.pusri.ticketing.entity.SeatCategory category = (row.equals("A") || row.equals("B")) ? vipCat : regCat;
+            SeatCategory category = (row.equals("A") || row.equals("B")) ? vipCat : regCat;
             for (int num = 1; num <= 6; num++) {
                 seatsBatch.add(
                         Seat.builder()
@@ -148,7 +170,7 @@ public class EventService {
                                 .category(category)
                                 .rowLabel(row)
                                 .seatNumber(num)
-                                .status(com.pusri.ticketing.entity.SeatStatus.AVAILABLE)
+                                .status(SeatStatus.AVAILABLE)
                                 .build()
                 );
             }
@@ -161,7 +183,7 @@ public class EventService {
     @Transactional
     public EventResponse updateEvent(Long id, com.pusri.ticketing.dto.request.CreateEventRequest req) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Event tidak ditemukan dengan ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Event not found with ID: " + id));
 
         if (req.getName() != null && !req.getName().isEmpty()) event.setName(req.getName());
         if (req.getDescription() != null) event.setDescription(req.getDescription());
@@ -186,12 +208,16 @@ public class EventService {
     @Transactional
     public void deleteEvent(Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Event tidak ditemukan dengan ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Event not found with ID: " + id));
+
+        if (bookingRepository.existsByEventId(id)) {
+            throw new IllegalStateException("Cannot delete an event that already has active or confirmed bookings.");
+        }
 
         List<Seat> seats = seatRepository.findByEventIdOrderByRowLabelAscSeatNumberAsc(id);
         seatRepository.deleteAll(seats);
 
-        List<com.pusri.ticketing.entity.SeatCategory> categories = seatCategoryRepository.findByEventId(id);
+        List<SeatCategory> categories = seatCategoryRepository.findByEventId(id);
         seatCategoryRepository.deleteAll(categories);
 
         eventRepository.delete(event);

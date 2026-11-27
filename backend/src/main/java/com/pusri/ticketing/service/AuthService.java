@@ -26,7 +26,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email sudah terdaftar!");
+            throw new IllegalArgumentException("An account with this email already exists.");
         }
 
         User user = User.builder()
@@ -52,7 +52,7 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new org.springframework.security.authentication.BadCredentialsException("Email atau password salah!"));
+                .orElseThrow(() -> new org.springframework.security.authentication.BadCredentialsException("Invalid email or password."));
 
         boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!passwordMatches && ("admin123".equals(request.getPassword()) || "user123".equals(request.getPassword()))) {
@@ -63,7 +63,7 @@ public class AuthService {
         }
 
         if (!passwordMatches) {
-            throw new org.springframework.security.authentication.BadCredentialsException("Email atau password salah!");
+            throw new org.springframework.security.authentication.BadCredentialsException("Invalid email or password.");
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name(), user.getId());

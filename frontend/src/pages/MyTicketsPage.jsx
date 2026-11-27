@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ticketApi } from '../services/api';
+import { Link, Navigate } from 'react-router-dom';
+import { ticketApi, API_BASE_URL } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Calendar, MapPin, Download, QrCode, X, Send, RefreshCw, CheckCircle2, Lock, ArrowRight, Copy, Check, Ticket } from 'lucide-react';
 
 export default function MyTicketsPage() {
+  const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,9 +19,10 @@ export default function MyTicketsPage() {
   const [transferring, setTransferring] = useState(false);
 
   useEffect(() => {
-    fetchTickets();
+    if (authLoading || !user) return;
     const query = new URLSearchParams(window.location.search);
-    if (query.get('success') === 'true') {
+    const isStripeReturn = query.get('success') === 'true';
+    if (isStripeReturn) {
       setShowSuccessBanner(true);
       showToast({
         type: 'success',
@@ -28,7 +31,8 @@ export default function MyTicketsPage() {
       });
       window.history.replaceState(null, '', window.location.pathname);
     }
-  }, []);
+    fetchTickets(isStripeReturn);
+  }, [authLoading, user]);
 
   useEffect(() => {
     if (!activeQrTicket) return;
@@ -39,9 +43,23 @@ export default function MyTicketsPage() {
     return () => clearInterval(interval);
   }, [activeQrTicket]);
 
-  const fetchTickets = async () => {
+  // Close modals on Escape key
+  useEffect(() => {
+    if (!activeQrTicket && !transferTicketTarget) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setActiveQrTicket(null);
+        setDynamicQrData(null);
+        setTransferTicketTarget(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeQrTicket, transferTicketTarget]);
+
+  const fetchTickets = async (reconcile = false) => {
     try {
-      const res = await ticketApi.getMyTickets();
+      const res = await ticketApi.getMyTickets(reconcile);
       setTickets(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
@@ -65,21 +83,33 @@ export default function MyTicketsPage() {
     setTimeout(() => setCopiedToken(false), 1800);
   };
 
+  const resolvePdfHref = (pdfUrl, ticketCode) => {
+    if (!pdfUrl) return `${API_BASE_URL}/tickets/${ticketCode}/pdf`;
+    if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://')) {
+      return pdfUrl;
+    }
+    return `${API_BASE_URL}${pdfUrl.startsWith('/') ? '' : '/'}${pdfUrl}`;
+  };
+
   const handleTransferSubmit = async (e) => {
     e.preventDefault();
     if (!transferTicketTarget || !recipientEmail.trim()) return;
 
+    const transferredId = transferTicketTarget.id;
+    const targetEmail = recipientEmail.trim();
     setTransferring(true);
     try {
-      await ticketApi.transfer(transferTicketTarget.id, recipientEmail.trim());
+      await ticketApi.transfer(transferredId, targetEmail);
+      // Optimistically update local ticket list immediately so count & list reflect transfer in 0ms
+      setTickets((prev) => prev.filter((item) => item.id !== transferredId));
+      setTransferTicketTarget(null);
+      setRecipientEmail('');
       showToast({
         type: 'success',
         title: 'Ticket Sent',
-        message: `Ticket transferred to ${recipientEmail.trim()}.`,
+        message: `Ticket transferred to ${targetEmail}.`,
       });
-      setTransferTicketTarget(null);
-      setRecipientEmail('');
-      fetchTickets();
+      await fetchTickets(false);
     } catch (err) {
       console.error(err);
       showToast({
@@ -91,6 +121,10 @@ export default function MyTicketsPage() {
       setTransferring(false);
     }
   };
+
+  if (!authLoading && !user) {
+    return <Navigate to="/login" state={{ from: '/my-tickets' }} replace />;
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-12 space-y-8">
@@ -132,6 +166,7 @@ export default function MyTicketsPage() {
           </div>
           <button
             onClick={() => setShowSuccessBanner(false)}
+            aria-label="Dismiss confirmation banner"
             className="text-emerald-700 hover:text-emerald-950 p-1.5 rounded-full hover:bg-emerald-100 cursor-pointer shrink-0"
           >
             <X className="w-4 h-4" />
@@ -139,7 +174,7 @@ export default function MyTicketsPage() {
         </div>
       )}
 
-      {loading ? (
+      {authLoading || loading ? (
         <div className="py-24 text-center">
           <div className="w-8 h-8 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm font-medium text-[#6B7280]">Loading your tickets...</p>
@@ -236,7 +271,6 @@ export default function MyTicketsPage() {
 
               {/* Right Perforated Ticket Stub */}
               <div className="md:col-span-4 border-t md:border-t-0 md:border-l-2 border-dashed border-[#E5E7EB] bg-[#FAFBFD] p-6 flex flex-col justify-center gap-3 relative">
-                {/* Circular Boarding-Pass Notches (Desktop) */}
                 <span className="hidden md:block w-5 h-5 rounded-full bg-[#F7F8FA] border border-[#E6E8EC] absolute -left-2.5 -top-2.5" />
                 <span className="hidden md:block w-5 h-5 rounded-full bg-[#F7F8FA] border border-[#E6E8EC] absolute -left-2.5 -bottom-2.5" />
 
@@ -262,21 +296,15 @@ export default function MyTicketsPage() {
                     <span>{t.isUsed ? 'Used' : 'Transfer'}</span>
                   </button>
 
-                  {t.pdfUrl ? (
-                    <a
-                      href={t.pdfUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-center gap-1.5 bg-white hover:bg-[#F7F8FA] text-[#111827] border border-[#E6E8EC] px-3 py-2.5 rounded-full text-xs font-bold transition-colors"
-                    >
-                      <Download className="w-3.5 h-3.5 text-[#4B5563]" />
-                      <span>PDF</span>
-                    </a>
-                  ) : (
-                    <span className="flex items-center justify-center bg-[#F1F3F7] text-[#9CA3AF] px-3 py-2.5 rounded-full text-xs font-semibold">
-                      No PDF
-                    </span>
-                  )}
+                  <a
+                    href={resolvePdfHref(t.pdfUrl, t.ticketCode)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-1.5 bg-white hover:bg-[#F7F8FA] text-[#111827] border border-[#E6E8EC] px-3 py-2.5 rounded-full text-xs font-bold transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#4B5563]" />
+                    <span>PDF</span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -286,13 +314,26 @@ export default function MyTicketsPage() {
 
       {/* Rotating Gate QR Modal */}
       {activeQrTicket && (
-        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-[#E6E8EC] rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center relative shadow-2xl space-y-5">
+        <div
+          onClick={() => {
+            setActiveQrTicket(null);
+            setDynamicQrData(null);
+          }}
+          className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Live Entry Pass QR Code"
+            className="bg-white border border-[#E6E8EC] rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center relative shadow-2xl space-y-5"
+          >
             <button
               onClick={() => {
                 setActiveQrTicket(null);
                 setDynamicQrData(null);
               }}
+              aria-label="Close QR modal"
               className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#111827] p-1.5 rounded-full hover:bg-[#F1F3F7] cursor-pointer"
             >
               <X className="w-4 h-4" />
@@ -356,10 +397,20 @@ export default function MyTicketsPage() {
 
       {/* P2P Pass Transfer Modal */}
       {transferTicketTarget && (
-        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-[#E6E8EC] rounded-3xl p-6 sm:p-8 max-w-md w-full relative shadow-2xl space-y-5 text-left">
+        <div
+          onClick={() => setTransferTicketTarget(null)}
+          className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Transfer Ticket to a Friend"
+            className="bg-white border border-[#E6E8EC] rounded-3xl p-6 sm:p-8 max-w-md w-full relative shadow-2xl space-y-5 text-left"
+          >
             <button
               onClick={() => setTransferTicketTarget(null)}
+              aria-label="Close transfer modal"
               className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#111827] p-1.5 rounded-full hover:bg-[#F1F3F7] cursor-pointer"
             >
               <X className="w-4 h-4" />

@@ -7,6 +7,8 @@ import com.pusri.ticketing.service.DynamicQrService;
 import com.pusri.ticketing.service.TicketService;
 import com.pusri.ticketing.service.TicketTransferService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,15 +29,26 @@ public class TicketController {
     private final TicketTransferService ticketTransferService;
 
     @GetMapping("/my")
-    public ResponseEntity<List<TicketResponse>> getMyTickets(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<TicketResponse>> getMyTickets(
+            @RequestParam(defaultValue = "false") boolean reconcile,
+            @AuthenticationPrincipal UserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
-        return ResponseEntity.ok(ticketService.getUserTickets(user.getId()));
+                .orElseThrow(() -> new IllegalArgumentException("User account not found."));
+        return ResponseEntity.ok(ticketService.getUserTickets(user.getId(), reconcile));
     }
 
     @GetMapping("/{code}")
     public ResponseEntity<TicketResponse> getTicketByCode(@PathVariable String code) {
         return ResponseEntity.ok(ticketService.getTicketByCode(code));
+    }
+
+    @GetMapping(value = "/{code}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> downloadTicketPdf(@PathVariable String code) {
+        byte[] pdfBytes = ticketService.generateTicketPdfByCode(code);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"Tixflow-Ticket-" + code + ".pdf\"")
+                .body(pdfBytes);
     }
 
     @GetMapping("/{code}/dynamic-qr")
@@ -56,7 +69,7 @@ public class TicketController {
         String recipientEmail = request.get("recipientEmail");
         ticketTransferService.transferTicket(id, userDetails.getUsername(), recipientEmail);
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Tiket berhasil ditransfer ke " + recipientEmail);
+        response.put("message", "Ticket transferred to " + recipientEmail);
         return ResponseEntity.ok(response);
     }
 }

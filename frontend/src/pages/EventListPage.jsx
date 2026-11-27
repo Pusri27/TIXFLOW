@@ -141,9 +141,7 @@ export default function EventListPage() {
                 {featuredEvent.venue && (
                   <div className="inline-flex items-center gap-2 bg-[#F7F8FA] border border-[#E6E8EC] px-3.5 py-2 rounded-full font-medium">
                     <MapPin className="w-4 h-4 text-[#E11D48] shrink-0" />
-                    <span>
-                      {featuredEvent.venue.name}, {featuredEvent.venue.city}
-                    </span>
+                    <span>{`${featuredEvent.venue.name}, ${featuredEvent.venue.city}`}</span>
                   </div>
                 )}
               </div>
@@ -193,7 +191,7 @@ export default function EventListPage() {
               </h2>
               {!loading && filteredEvents.length > 0 && (
                 <span className="text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3 py-1 rounded-full">
-                  {filteredEvents.length} events
+                  {filteredEvents.length === 1 ? '1 event' : `${filteredEvents.length} events`}
                 </span>
               )}
             </div>

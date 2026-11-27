@@ -4,8 +4,10 @@ const defaultApiUrl = import.meta.env.PROD
   ? 'https://tixflow-api-natades-projects.vercel.app/api'
   : 'http://localhost:8080/api';
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || defaultApiUrl;
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || defaultApiUrl,
+  baseURL: API_BASE_URL,
 });
 
 API.interceptors.request.use((config) => {
@@ -16,6 +18,19 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const reqUrl = error.config?.url || '';
+    if (status === 401 && !reqUrl.includes('/auth/login') && !reqUrl.includes('/auth/register')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const authApi = {
   login: (data) => API.post('/auth/login', data),
   register: (data) => API.post('/auth/register', data),
@@ -23,6 +38,7 @@ export const authApi = {
 
 export const eventApi = {
   getAll: (category) => API.get('/events', { params: { category } }),
+  getVenues: () => API.get('/events/venues'),
   getById: (id) => API.get(`/events/${id}`),
   getSeats: (id) => API.get(`/events/${id}/seats`),
 };
@@ -37,7 +53,8 @@ export const bookingApi = {
 };
 
 export const ticketApi = {
-  getMyTickets: () => API.get('/tickets/my'),
+  getMyTickets: (reconcile = false) =>
+    API.get('/tickets/my', { params: reconcile ? { reconcile: true } : {} }),
   getByCode: (code) => API.get(`/tickets/${code}`),
   getDynamicQr: (code) => API.get(`/tickets/${code}/dynamic-qr`),
   transfer: (id, recipientEmail) => API.post(`/tickets/${id}/transfer`, { recipientEmail }),

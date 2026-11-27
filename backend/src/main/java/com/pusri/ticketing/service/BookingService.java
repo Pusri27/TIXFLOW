@@ -44,10 +44,16 @@ public class BookingService {
     @Transactional
     public BookingResponse initiateBooking(BookingInitiateRequest request, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("User account not found."));
 
         Event event = eventRepository.findById(request.getEventId())
-                .orElseThrow(() -> new IllegalArgumentException("Event tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("Event not found."));
+
+        // Release any expired holds before locking seats (critical for serverless deployments)
+        List<Booking> expired = bookingRepository.findExpiredBookings(BookingStatus.PENDING, LocalDateTime.now());
+        for (Booking exp : expired) {
+            cancelBookingInternal(exp);
+        }
 
         List<Long> seatIds = request.getSeatIds();
 
@@ -57,7 +63,7 @@ public class BookingService {
             for (Long seatId : seatIds) {
                 boolean locked = seatLockService.tryLockSeat(seatId, user.getId());
                 if (!locked) {
-                    throw new IllegalStateException("Kursi ID " + seatId + " sedang dipesan oleh user lain!");
+                    throw new IllegalStateException("Seat is currently being held by another fan. Please choose a different seat.");
                 }
                 acquiredLocks.add(seatId);
             }
@@ -66,7 +72,7 @@ public class BookingService {
             List<Seat> seats = seatRepository.findAllByIdsForUpdate(seatIds);
             for (Seat seat : seats) {
                 if (seat.getStatus() != SeatStatus.AVAILABLE) {
-                    throw new IllegalStateException("Kursi " + seat.getRowLabel() + seat.getSeatNumber() + " sudah tidak tersedia!");
+                    throw new IllegalStateException("Seat " + seat.getRowLabel() + "-" + seat.getSeatNumber() + " is no longer available.");
                 }
             }
 
@@ -122,19 +128,19 @@ public class BookingService {
     @Transactional
     public BookingResponse confirmPayment(Long bookingId, ConfirmPaymentRequest request, String userEmail) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found."));
 
         if (!booking.getUser().getEmail().equals(userEmail)) {
-            throw new IllegalArgumentException("Booking ini bukan milik Anda");
+            throw new IllegalArgumentException("You do not have access to this booking.");
         }
 
         if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new IllegalStateException("Status booking tidak valid: " + booking.getStatus());
+            throw new IllegalStateException("Invalid booking status: " + booking.getStatus());
         }
 
         if (LocalDateTime.now().isAfter(booking.getExpiresAt())) {
             cancelBookingInternal(booking);
-            throw new IllegalStateException("Waktu pembayaran booking ini sudah habis (Expired)!");
+            throw new IllegalStateException("Seat reservation window has expired. Please pick seats again.");
         }
 
         // Confirm booking & create Stripe PaymentIntent
@@ -185,12 +191,13 @@ public class BookingService {
         return mapToBookingResponse(confirmedBooking);
     }
 
+    @Transactional
     public Map<String, String> createStripeCheckoutSession(Long bookingId, String userEmail) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found."));
 
         if (!booking.getUser().getEmail().equals(userEmail)) {
-            throw new IllegalArgumentException("Booking ini bukan milik Anda");
+            throw new IllegalArgumentException("You do not have access to this booking.");
         }
 
         if (booking.getStatus() != BookingStatus.PENDING) {
@@ -200,7 +207,12 @@ public class BookingService {
                 response.put("sessionId", booking.getStripePaymentIntentId() != null ? booking.getStripePaymentIntentId() : "cs_confirmed");
                 return response;
             }
-            throw new IllegalStateException("Status booking tidak valid: " + booking.getStatus());
+            throw new IllegalStateException("Booking is no longer active (" + booking.getStatus() + ").");
+        }
+
+        if (LocalDateTime.now().isAfter(booking.getExpiresAt())) {
+            cancelBookingInternal(booking);
+            throw new IllegalStateException("Seat reservation window has expired. Please select seats again.");
         }
 
         String effectiveStripeKey = (stripeSecretKey != null && !stripeSecretKey.isEmpty()) ? stripeSecretKey : System.getenv("STRIPE_SECRET_KEY");
@@ -261,10 +273,10 @@ public class BookingService {
     @Transactional
     public void cancelBooking(Long bookingId, String userEmail) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found."));
 
         if (!booking.getUser().getEmail().equals(userEmail)) {
-            throw new IllegalArgumentException("Booking ini bukan milik Anda");
+            throw new IllegalArgumentException("You do not have access to this booking.");
         }
 
         cancelBookingInternal(booking);
@@ -295,7 +307,7 @@ public class BookingService {
     @Transactional(readOnly = true)
     public List<BookingResponse> getUserBookings(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("User account not found."));
 
         return bookingRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
                 .stream().map(this::mapToBookingResponse).collect(Collectors.toList());

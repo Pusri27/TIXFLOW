@@ -37,13 +37,14 @@ public class SecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeRequests()
-                .antMatchers("/api/auth/**", "/api/webhooks/**", "/h2-console/**", "/ws/**", "/ws", "/actuator/**", "/api/queue/**", "/api/organizer/**", "/api/admin/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/events/**").permitAll()
+                .antMatchers("/api/auth/**", "/api/webhooks/**", "/h2-console/**", "/ws/**", "/ws", "/actuator/**", "/api/queue/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/events/**", "/api/tickets/*/pdf").permitAll()
+                .antMatchers("/api/admin/**", "/api/organizer/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/events/**").hasRole("ADMIN")
                 .antMatchers("/api/bookings/**", "/api/tickets/**").authenticated()
                 .anyRequest().authenticated()
             .and()
-            .headers().frameOptions().sameOrigin(); // for H2 console
+            .headers().frameOptions().sameOrigin();
 
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

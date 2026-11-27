@@ -1,39 +1,59 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { bookingApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { formatPrice } from '../utils/formatPrice';
-import { Clock, CreditCard, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Copy, Check } from 'lucide-react';
+import { Clock, CreditCard, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Copy, Check, XCircle } from 'lucide-react';
 
 const TEST_CARDS = [
   { label: 'Visa — Instant Approval', note: 'Payment succeeds', number: '4242 4242 4242 4242', tone: 'text-emerald-600' },
-  { label: 'Mastercard — Instant Approval', note: 'Payment succeeds', number: '5555 5555 5555 4444', tone: 'text-emerald-600' },
+  { label: 'Mastercard — Approval', note: 'Payment succeeds', number: '5555 5555 5555 4444', tone: 'text-emerald-600' },
   { label: '3D Secure OTP Card', note: 'Triggers OTP check', number: '4000 0000 0000 3020', tone: 'text-amber-600' },
-  { label: 'Declined Test Card', note: 'Simulates bank decline', number: '4000 0000 0000 0002', tone: 'text-rose-600' },
+  { label: 'Declined Test Card', note: 'Bank decline test', number: '4000 0000 0000 0002', tone: 'text-rose-600' },
 ];
 
 export default function CheckoutPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const [canceling, setCanceling] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600);
   const [expiredError, setExpiredError] = useState(null);
   const [copiedCard, setCopiedCard] = useState(null);
+  const [canceledNotice, setCanceledNotice] = useState(false);
 
   useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    if (query.get('canceled') === 'true') {
+      setCanceledNotice(true);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
     fetchBooking();
-  }, [id]);
+  }, [id, authLoading, user]);
 
   useEffect(() => {
     if (!booking || paymentDone) return;
 
     if (booking.status === 'CONFIRMED') {
       setPaymentDone(true);
+      return;
+    }
+
+    if (booking.status === 'EXPIRED' || booking.status === 'CANCELLED') {
+      setTimeLeft(0);
+      setExpiredError('This seat reservation is no longer active');
       return;
     }
 
@@ -78,7 +98,7 @@ export default function CheckoutPage() {
           setPaymentDone(true);
         }
       } else {
-        setBooking(list[0] || null);
+        setBooking(null);
       }
     } catch (err) {
       console.error(err);
@@ -114,6 +134,28 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleCancelBooking = async () => {
+    if (!booking) return;
+    setCanceling(true);
+    try {
+      await bookingApi.cancel(booking.id);
+      showToast({
+        type: 'info',
+        title: 'Hold Released',
+        message: 'Your held seats have been released back to the stadium map.',
+      });
+      navigate(`/events/${booking.eventId}`);
+    } catch (err) {
+      showToast({
+        type: 'error',
+        title: 'Unable to Cancel',
+        message: err.response?.data?.message || err.message,
+      });
+    } finally {
+      setCanceling(false);
+    }
+  };
+
   const handleCopyCard = (number) => {
     navigator.clipboard?.writeText(number.replace(/\s+/g, ''));
     setCopiedCard(number);
@@ -126,7 +168,11 @@ export default function CheckoutPage() {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
-  if (loading || !booking) {
+  if (!authLoading && !user) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  if (authLoading || loading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-24 text-center">
         <div className="w-8 h-8 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-3" />
@@ -135,17 +181,57 @@ export default function CheckoutPage() {
     );
   }
 
+  if (!booking) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-24 text-center">
+        <div className="market-card rounded-3xl p-8 space-y-4">
+          <h2 className="font-display text-2xl font-extrabold text-[#111827]">Booking Not Found</h2>
+          <p className="text-sm text-[#6B7280]">
+            We couldn&apos;t find this reservation in your account, or it has already expired.
+          </p>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold px-6 py-3 rounded-full text-sm transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Explore Events</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-12">
       {!paymentDone ? (
         <div className="space-y-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#4B5563] hover:text-[#E11D48] transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Seat Map</span>
-          </button>
+          <div className="flex items-center justify-between gap-4">
+            <Link
+              to={`/events/${booking.eventId}`}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#4B5563] hover:text-[#E11D48] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Seat Map</span>
+            </Link>
+
+            {timeLeft > 0 && (
+              <button
+                type="button"
+                onClick={handleCancelBooking}
+                disabled={canceling}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B7280] hover:text-[#E11D48] transition-colors cursor-pointer"
+              >
+                <XCircle className="w-4 h-4" />
+                <span>{canceling ? 'Releasing...' : 'Cancel & Release Seats'}</span>
+              </button>
+            )}
+          </div>
+
+          {canceledNotice && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm p-4 rounded-2xl">
+              Checkout was canceled on Stripe — your seats are still held below until the timer runs out.
+            </div>
+          )}
 
           {/* Seat Hold Timer Banner */}
           <div
@@ -189,12 +275,12 @@ export default function CheckoutPage() {
                     : 'Your seat hold has expired.'}
                 </span>
               </div>
-              <button
-                onClick={() => navigate(-1)}
-                className="shrink-0 bg-white hover:bg-red-100 border border-red-200 text-red-700 px-4 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer"
+              <Link
+                to={`/events/${booking.eventId}`}
+                className="shrink-0 bg-white hover:bg-red-100 border border-red-200 text-red-700 px-4 py-2 rounded-full text-xs font-bold transition-colors text-center"
               >
                 Choose Seats Again
-              </button>
+              </Link>
             </div>
           )}
 
@@ -285,18 +371,18 @@ export default function CheckoutPage() {
                       key={card.number}
                       type="button"
                       onClick={() => handleCopyCard(card.number)}
-                      className="w-full text-left flex items-center justify-between bg-[#F7F8FA] hover:bg-[#F1F3F7] border border-[#E6E8EC] px-3.5 py-2.5 rounded-2xl transition-colors cursor-pointer group"
+                      className="w-full text-left flex items-center justify-between gap-2 bg-[#F7F8FA] hover:bg-[#F1F3F7] border border-[#E6E8EC] px-3 py-2.5 rounded-2xl transition-colors cursor-pointer group"
                     >
-                      <div>
-                        <span className="text-xs font-bold text-[#111827] block">{card.label}</span>
-                        <span className={`text-[11px] font-medium ${card.tone}`}>{card.note}</span>
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-[#111827] block truncate">{card.label}</span>
+                        <span className={`text-[11px] font-medium block truncate ${card.tone}`}>{card.note}</span>
                       </div>
-                      <div className="flex items-center gap-2 font-mono text-xs font-semibold text-[#111827] bg-white border border-[#E6E8EC] px-2.5 py-1 rounded-lg shadow-2xs">
+                      <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-[#111827] bg-white border border-[#E6E8EC] px-2.5 py-1 rounded-lg shadow-2xs shrink-0 whitespace-nowrap">
                         <span>{card.number}</span>
                         {isCopied ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                         ) : (
-                          <Copy className="w-3.5 h-3.5 text-[#9CA3AF] group-hover:text-[#E11D48]" />
+                          <Copy className="w-3.5 h-3.5 text-[#9CA3AF] group-hover:text-[#E11D48] shrink-0" />
                         )}
                       </div>
                     </button>

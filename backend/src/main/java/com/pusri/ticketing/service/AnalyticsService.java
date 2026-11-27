@@ -24,7 +24,7 @@ public class AnalyticsService {
     @Transactional(readOnly = true)
     public Map<String, Object> getEventAnalytics(Long eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event tidak ditemukan"));
+                .orElseThrow(() -> new IllegalArgumentException("Event not found."));
 
         List<Seat> seats = seatRepository.findByEventIdOrderByRowLabelAscSeatNumberAsc(eventId);
         long totalSeats = seats.size();

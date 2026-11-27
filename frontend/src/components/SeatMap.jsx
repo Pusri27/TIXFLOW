@@ -126,6 +126,9 @@ export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
                         className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border text-xs font-semibold flex items-center justify-center transition-all duration-150 ${getSeatClass(
                           seat
                         )}`}
+                        aria-label={`Row ${seat.rowLabel} Seat ${seat.seatNumber}, ${
+                          cat ? `${cat.name} ${formatPrice(cat.price)}` : 'Standard'
+                        }, ${isSelected ? 'selected' : seat.status.toLowerCase()}`}
                         title={`Row ${seat.rowLabel} Seat ${seat.seatNumber}${
                           cat ? ` · ${cat.name} (${formatPrice(cat.price)})` : ''
                         } (${seat.status})`}

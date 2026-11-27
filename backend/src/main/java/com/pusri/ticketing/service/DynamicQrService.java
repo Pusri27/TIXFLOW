@@ -27,12 +27,12 @@ public class DynamicQrService {
 
     public String validateDynamicQrPayload(String payload) {
         if (payload == null || !payload.contains(":")) {
-            throw new IllegalArgumentException("Format QR Payload tidak valid");
+            throw new IllegalArgumentException("Invalid QR token format. Expected a live Tixflow pass payload.");
         }
 
         String[] parts = payload.split(":");
         if (parts.length != 3) {
-            throw new IllegalArgumentException("Format QR Payload tidak valid (3 bagian dibutuhkan)");
+            throw new IllegalArgumentException("Invalid QR token structure. Please scan a valid Tixflow pass.");
         }
 
         String ticketCode = parts[0];
@@ -40,7 +40,7 @@ public class DynamicQrService {
         try {
             payloadTimeStep = Long.parseLong(parts[1]);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Timestamp QR tidak valid");
+            throw new IllegalArgumentException("Invalid QR token timestamp.");
         }
 
         String providedSignature = parts[2];
@@ -48,14 +48,14 @@ public class DynamicQrService {
 
         // Allow +/- 1 time step tolerance (up to 30s grace period)
         if (Math.abs(currentStep - payloadTimeStep) > 1) {
-            throw new IllegalStateException("QR Code telah kadaluarsa. Silakan refresh QR Code Anda.");
+            throw new IllegalStateException("QR token has expired. Ask the guest to refresh their live pass.");
         }
 
         String expectedRawData = ticketCode + ":" + payloadTimeStep;
         String expectedSignature = generateHmac(expectedRawData);
 
         if (!expectedSignature.equals(providedSignature)) {
-            throw new SecurityException("Tanda tangan QR Code tidak valid atau telah dipalsukan!");
+            throw new SecurityException("Invalid QR cryptographic signature.");
         }
 
         return ticketCode;
@@ -69,8 +69,8 @@ public class DynamicQrService {
             byte[] hmacBytes = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
             return Base64.getUrlEncoder().withoutPadding().encodeToString(hmacBytes);
         } catch (Exception e) {
-            log.error("Gagal membuat HMAC signature untuk QR", e);
-            throw new RuntimeException("Gagal enkripsi Dynamic QR");
+            log.error("Failed to generate HMAC signature for QR", e);
+            throw new RuntimeException("Failed to sign Dynamic QR payload");
         }
     }
 }

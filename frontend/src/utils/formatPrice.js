@@ -1,6 +1,6 @@
 /**
- * Formats ticket prices cleanly across IDR-seeded Indonesian events (>= 10,000)
- * and smaller USD test listings (< 10,000).
+ * Formats ticket prices cleanly across IDR-seeded Indonesian events (>= 10,000 or 0)
+ * and smaller USD test listings (1..9,999).
  */
 export function formatPrice(amount) {
   const num = Number(amount || 0);
@@ -13,6 +13,7 @@ export function formatPrice(amount) {
 
 export function formatCompactPrice(amount) {
   const num = Number(amount || 0);
+  if (num === 0) return 'IDR 0';
   if (num >= 1000000) {
     const millions = (num / 1000000).toFixed(num % 1000000 === 0 ? 0 : 1);
     return `IDR ${millions}M`;
