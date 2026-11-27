@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, Phone, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Phone, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -23,125 +23,125 @@ export default function RegisterPage() {
       await register(name, email, password, phone);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Email may already be in use.');
+      setError(err.response?.data?.message || 'Registration failed. Email may already be registered.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-8 py-12 sm:py-20">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        {/* Left Editorial Column */}
+    <div className="max-w-5xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        {/* Left Benefits Column */}
         <div className="lg:col-span-6 space-y-6">
           <div className="space-y-3">
-            <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] block">
-              Create Account
+            <span className="inline-block text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3.5 py-1.5 rounded-full">
+              Create Your Account
             </span>
-            <h1 className="font-display text-3xl sm:text-5xl font-bold text-[#F4F4F0] leading-[1.05] tracking-tight">
-              Instant tickets. Zero scalper screenshots.
+            <h1 className="font-display text-3xl sm:text-5xl font-extrabold text-[#111827] leading-[1.08]">
+              Book seats in seconds, stress-free.
             </h1>
-            <p className="text-[#9E9EA8] text-sm leading-relaxed">
-              Set up your pass wallet for live seat locking, Stripe checkout, rotating 30-second QR entry tokens, and peer-to-peer ticket transfers.
+            <p className="text-[#4B5563] text-sm sm:text-base leading-relaxed">
+              Join Tixflow to reserve exact stadium seats, pay securely via Stripe, and keep rotating anti-fraud passes in your wallet.
             </p>
           </div>
 
-          <div className="border-t border-[#242429] pt-5 space-y-3 font-mono text-xs text-[#9E9EA8]">
-            <div className="flex items-center gap-3">
-              <span className="text-[#D4FF00]">01</span>
-              <span>10-minute exclusive seat holds at checkout</span>
+          <div className="space-y-3 pt-2 text-sm text-[#374151] font-medium">
+            <div className="flex items-center gap-3 bg-white border border-[#E6E8EC] p-3.5 rounded-2xl shadow-2xs">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>10-minute guaranteed seat hold while you check out</span>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[#D4FF00]">02</span>
-              <span>Rotating TOTP QR passes + downloadable PDF stubs</span>
+            <div className="flex items-center gap-3 bg-white border border-[#E6E8EC] p-3.5 rounded-2xl shadow-2xs">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>Live 30-second rotating QR passes &amp; printable PDFs</span>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[#D4FF00]">03</span>
-              <span>Instant pass transfers to any registered email</span>
+            <div className="flex items-center gap-3 bg-white border border-[#E6E8EC] p-3.5 rounded-2xl shadow-2xs">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>Easy 1-click ticket transfers to friends</span>
             </div>
           </div>
         </div>
 
-        {/* Right Registration Form */}
+        {/* Right Sign-Up Card */}
         <div className="lg:col-span-6">
-          <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-6">
+          <div className="market-card rounded-3xl p-6 sm:p-9 space-y-6">
             <div>
-              <h2 className="font-display text-2xl font-bold text-[#F4F4F0]">Get Access</h2>
-              <p className="text-xs text-[#9E9EA8] mt-1">Create your TIXFLOW attendee profile.</p>
+              <h2 className="font-display text-2xl font-extrabold text-[#111827]">Sign Up</h2>
+              <p className="text-sm text-[#6B7280] mt-1">Create your free fan account below.</p>
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/40 text-red-300 text-xs p-3.5 rounded-md flex items-center gap-2.5">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+              <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-medium p-3.5 rounded-2xl flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>{error}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-1.5">
+                <label className="block text-xs font-bold text-[#374151] mb-1.5">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Alex Mercer"
-                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-2.5 rounded-md text-sm outline-none transition-colors"
+                    placeholder="Nadia Putri"
+                    className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white text-[#111827] pl-11 pr-4 py-3 rounded-2xl text-sm outline-none transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-1.5">
-                  Email
+                <label className="block text-xs font-bold text-[#374151] mb-1.5">
+                  Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="alex@example.com"
-                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-2.5 rounded-md text-sm outline-none transition-colors"
+                    placeholder="nadia@example.com"
+                    className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white text-[#111827] pl-11 pr-4 py-3 rounded-2xl text-sm outline-none transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-1.5">
-                  Mobile Number <span className="text-[#666670]">(Optional)</span>
+                <label className="block text-xs font-bold text-[#374151] mb-1.5">
+                  Mobile Number <span className="text-[#9CA3AF] font-normal">(Optional)</span>
                 </label>
                 <div className="relative">
-                  <Phone className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Phone className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+65 8123 4567"
-                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-2.5 rounded-md text-sm outline-none transition-colors"
+                    placeholder="+62 812 3456 7890"
+                    className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white text-[#111827] pl-11 pr-4 py-3 rounded-2xl text-sm outline-none transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-1.5">
+                <label className="block text-xs font-bold text-[#374151] mb-1.5">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     type="password"
                     required
                     minLength={6}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Minimum 6 characters"
-                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-2.5 rounded-md text-sm outline-none transition-colors"
+                    placeholder="At least 6 characters"
+                    className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white text-[#111827] pl-11 pr-4 py-3 rounded-2xl text-sm outline-none transition-all"
                   />
                 </div>
               </div>
@@ -149,17 +149,17 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-50 mt-2"
+                className="w-full py-4 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold rounded-full shadow-md shadow-rose-500/25 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-50 mt-2"
               >
                 <span>{loading ? 'Creating Account...' : 'Create Account'}</span>
                 {!loading && <ArrowRight className="w-4 h-4" />}
               </button>
             </form>
 
-            <div className="border-t border-[#242429] pt-5 text-center">
-              <p className="text-xs text-[#9E9EA8]">
-                Already registered?{' '}
-                <Link to="/login" className="text-[#D4FF00] hover:underline font-semibold">
+            <div className="border-t border-[#F1F3F7] pt-5 text-center">
+              <p className="text-xs sm:text-sm text-[#6B7280]">
+                Already have an account?{' '}
+                <Link to="/login" className="text-[#E11D48] hover:underline font-bold">
                   Sign in
                 </Link>
               </p>

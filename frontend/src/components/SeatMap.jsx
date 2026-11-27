@@ -5,8 +5,8 @@ import { formatPrice, formatCompactPrice } from '../utils/formatPrice';
 export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
   if (!seatMap || !seatMap.seats) {
     return (
-      <div className="bg-[#121214] border border-[#242429] rounded-lg p-12 text-center font-mono text-xs text-[#9E9EA8]">
-        Loading venue seating layout...
+      <div className="market-card rounded-3xl p-12 text-center text-sm font-medium text-[#6B7280]">
+        Loading interactive stadium seating map...
       </div>
     );
   }
@@ -24,75 +24,106 @@ export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
     return acc;
   }, {});
 
+  // Compute gentle amphitheater parabolic curve offset per seat index in row
+  const getCurveOffset = (index, totalInRow) => {
+    if (totalInRow <= 2) return 0;
+    const center = (totalInRow - 1) / 2;
+    const normalized = (index - center) / center; // -1 to 1
+    return Math.round(normalized * normalized * 12); // outer seats curve slightly upward/downward toward stage
+  };
+
   const getSeatClass = (seat) => {
     const isSelected = selectedSeatIds.includes(seat.id);
 
     if (isSelected) {
-      return 'bg-[#D4FF00] text-[#0B0B0C] border-[#D4FF00] font-bold shadow-sm';
+      return 'bg-[#E11D48] text-white border-[#E11D48] font-bold shadow-md shadow-rose-500/30 scale-110 z-10';
     }
 
     if (seat.status === 'BOOKED') {
-      return 'bg-[#0E0E10] text-[#3A3A42] border-[#1C1C21] cursor-not-allowed';
+      return 'bg-[#E5E7EB] text-[#9CA3AF] border-transparent cursor-not-allowed';
     }
 
     if (seat.status === 'HELD' || seat.isLocked) {
-      return 'bg-amber-500/10 text-amber-400 border-amber-500/40 cursor-not-allowed';
+      return 'bg-amber-50 text-amber-700 border-amber-300 cursor-not-allowed';
     }
 
-    return 'bg-[#17171A] text-[#F4F4F0] border-[#2C2C34] hover:border-[#D4FF00] hover:text-[#D4FF00] cursor-pointer';
+    return 'bg-white text-[#111827] border-[#D1D5DB] hover:border-[#E11D48] hover:text-[#E11D48] hover:scale-110 shadow-2xs cursor-pointer';
   };
 
   return (
-    <div className="bg-[#121214] border border-[#242429] rounded-lg p-5 sm:p-8 space-y-8 ra-grid-bg">
-      {/* Floorplan Status Strip */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-[#242429]">
-        <div className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[#F4F4F0]">
-          <span className="w-2 h-2 rounded-full bg-[#D4FF00]" />
-          <span>Live Venue Floorplan</span>
+    <div className="market-card rounded-3xl p-5 sm:p-8 space-y-8">
+      {/* Top Bar */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-[#F1F3F7]">
+        <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Live Stadium Availability</span>
         </div>
-        <span className="font-mono text-[11px] text-[#666670]">
-          Real-time availability · Auto-synced
+        <span className="text-xs text-[#6B7280]">
+          Tap any open seat circle to select · Synced in real time
         </span>
       </div>
 
-      {/* Architectural Stage Deck */}
-      <div className="max-w-lg mx-auto pt-1">
-        <div className="h-1.5 bg-[#D4FF00] rounded-xs" />
-        <div className="border-x border-b border-[#242429] bg-[#0B0B0C]/90 py-2 text-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#9E9EA8] font-semibold">
-            STAGE
-          </span>
-        </div>
+      {/* Curved Amphitheater Stage Arc */}
+      <div className="max-w-xl mx-auto pt-1 text-center">
+        <svg viewBox="0 0 520 68" className="w-full max-w-md mx-auto overflow-visible">
+          <defs>
+            <radialGradient id="stageWash" cx="50%" cy="20%" r="60%">
+              <stop offset="0%" stopColor="#FB7185" stopOpacity="0.24" />
+              <stop offset="100%" stopColor="#FB7185" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="260" cy="40" rx="220" ry="32" fill="url(#stageWash)" />
+          <path
+            d="M 40 52 Q 260 8 480 52"
+            fill="none"
+            stroke="#E11D48"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+          <text
+            x="260"
+            y="50"
+            textAnchor="middle"
+            fill="#6B7280"
+            fontSize="11"
+            fontWeight="700"
+            letterSpacing="3"
+          >
+            MAIN STAGE
+          </text>
+        </svg>
       </div>
 
-      {/* Interactive Seat Rows */}
-      <div className="overflow-x-auto scrollbar-none py-2">
-        <div className="space-y-3 min-w-[340px] max-w-xl mx-auto">
+      {/* Curved Bowl Seat Rows */}
+      <div className="overflow-x-auto scrollbar-none py-3 bg-[#F7F8FA] rounded-2xl border border-[#E6E8EC] px-4">
+        <div className="space-y-4 min-w-[360px] max-w-xl mx-auto py-3">
           {Object.entries(rows).map(([rowLabel, seats]) => {
             const firstCat = seats[0] ? categoriesById[seats[0].categoryId] : null;
             return (
               <div key={rowLabel} className="flex items-center justify-center gap-3 sm:gap-4">
-                <span className="w-6 text-right font-mono text-xs font-semibold text-[#666670]">
+                <span className="w-6 text-right text-xs font-bold text-[#6B7280]">
                   {rowLabel}
                 </span>
 
-                <div className="flex items-center gap-2 sm:gap-2.5">
-                  {seats.map((seat) => {
+                <div className="flex items-center gap-2 sm:gap-2.5 py-1">
+                  {seats.map((seat, idx) => {
                     const isAvailable = seat.status === 'AVAILABLE' && !seat.isLocked;
                     const isSelected = selectedSeatIds.includes(seat.id);
                     const cat = categoriesById[seat.categoryId];
+                    const yOffset = getCurveOffset(idx, seats.length);
 
                     return (
                       <button
                         key={seat.id}
                         disabled={!isAvailable && !isSelected}
                         onClick={() => onToggleSeat(seat.id)}
-                        style={
-                          isAvailable && !isSelected && cat?.colorCode
-                            ? { borderTopColor: cat.colorCode, borderTopWidth: '2px' }
-                            : undefined
-                        }
-                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-md border font-mono text-xs flex items-center justify-center transition-colors ${getSeatClass(
+                        style={{
+                          transform: `translateY(${yOffset}px)`,
+                          ...(isAvailable && !isSelected && cat?.colorCode
+                            ? { borderColor: cat.colorCode, borderWidth: '2px' }
+                            : {}),
+                        }}
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border text-xs font-semibold flex items-center justify-center transition-all duration-150 ${getSeatClass(
                           seat
                         )}`}
                         title={`Row ${seat.rowLabel} Seat ${seat.seatNumber}${
@@ -102,7 +133,7 @@ export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
                         {seat.status === 'BOOKED' ? (
                           '×'
                         ) : seat.status === 'HELD' || seat.isLocked ? (
-                          <Lock className="w-3 h-3" />
+                          <Lock className="w-3.5 h-3.5" />
                         ) : (
                           seat.seatNumber
                         )}
@@ -112,7 +143,7 @@ export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
                 </div>
 
                 <span
-                  className="w-16 text-left font-mono text-[10px] text-[#666670] hidden sm:inline whitespace-nowrap"
+                  className="w-16 text-left text-[11px] font-semibold text-[#6B7280] hidden sm:inline whitespace-nowrap"
                   title={firstCat?.name}
                 >
                   {firstCat ? formatCompactPrice(firstCat.price) : rowLabel}
@@ -123,33 +154,36 @@ export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
         </div>
       </div>
 
-      {/* Tier & Status Legend */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-[#242429] text-xs">
+      {/* Clean Consumer Legend */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pt-2 text-xs">
         <div className="flex flex-wrap items-center gap-4">
           {(seatMap.categories || []).map((cat) => (
-            <div key={cat.id} className="flex items-center gap-2">
+            <div
+              key={cat.id}
+              className="inline-flex items-center gap-2 bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-1.5 rounded-full"
+            >
               <span
-                className="w-3 h-3 rounded-xs"
-                style={{ backgroundColor: cat.colorCode || '#9E9EA8' }}
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: cat.colorCode || '#6B7280' }}
               />
-              <span className="text-[#F4F4F0] font-medium">{cat.name}</span>
-              <span className="font-mono text-[#9E9EA8]">{formatPrice(cat.price)}</span>
+              <span className="text-[#111827] font-semibold">{cat.name}</span>
+              <span className="text-[#6B7280] font-medium">{formatPrice(cat.price)}</span>
             </div>
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 font-mono text-[11px] text-[#9E9EA8]">
+        <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-[#4B5563]">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-xs bg-[#D4FF00]" />
-            <span className="text-[#F4F4F0]">Selected</span>
+            <span className="w-3.5 h-3.5 rounded-full bg-[#E11D48]" />
+            <span>Selected</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-xs bg-amber-500/20 border border-amber-500/50" />
-            <span>Held</span>
+            <span className="w-3.5 h-3.5 rounded-full bg-amber-100 border border-amber-400" />
+            <span>On Hold</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-xs bg-[#0E0E10] border border-[#242429]" />
-            <span className="text-[#666670]">Sold</span>
+            <span className="w-3.5 h-3.5 rounded-full bg-[#E5E7EB]" />
+            <span className="text-[#9CA3AF]">Sold</span>
           </div>
         </div>
       </div>

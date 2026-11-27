@@ -52,29 +52,29 @@ export default function OrganizerDashboardPage() {
       <div className="flex items-center justify-between">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-[#9E9EA8] hover:text-[#D4FF00] transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#4B5563] hover:text-[#E11D48] transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>All Events</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Events</span>
         </Link>
-        <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] bg-[#121214] border border-[#242429] px-2.5 py-1 rounded">
+        <span className="text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3.5 py-1.5 rounded-full">
           Organizer Analytics
         </span>
       </div>
 
-      {/* Event Switcher Panel */}
-      <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-5">
+      {/* Event Switcher Card */}
+      <div className="market-card rounded-3xl p-6 sm:p-8 space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-[#666670] block">
-              Box Office &amp; Gate Report
+            <span className="text-xs font-semibold text-[#6B7280] block">
+              Live Box Office Overview
             </span>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] mt-0.5">
+            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827] mt-0.5">
               Sales &amp; Venue Occupancy
             </h1>
           </div>
 
-          <div className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-80">
             <select
               value={selectedEventId || ''}
               onChange={(e) => {
@@ -82,7 +82,7 @@ export default function OrganizerDashboardPage() {
                 setSelectedEventId(newId);
                 navigate(`/organizer/analytics/${newId}`);
               }}
-              className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] font-medium text-xs px-3.5 py-2.5 rounded-md outline-none cursor-pointer appearance-none pr-9"
+              className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] text-[#111827] font-semibold text-sm px-4 py-3 rounded-2xl outline-none cursor-pointer appearance-none pr-10"
             >
               {eventsList.map((evt) => (
                 <option key={evt.id} value={evt.id}>
@@ -90,11 +90,11 @@ export default function OrganizerDashboardPage() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-4 h-4 text-[#666670] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown className="w-4 h-4 text-[#6B7280] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-4 border-t border-[#242429]">
+        <div className="flex flex-wrap gap-2 pt-4 border-t border-[#F1F3F7]">
           {eventsList.map((evt) => (
             <button
               key={evt.id}
@@ -102,10 +102,10 @@ export default function OrganizerDashboardPage() {
                 setSelectedEventId(evt.id);
                 navigate(`/organizer/analytics/${evt.id}`);
               }}
-              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer truncate max-w-[200px] ${
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer truncate max-w-[210px] ${
                 selectedEventId === evt.id
-                  ? 'bg-[#D4FF00] text-[#0B0B0C]'
-                  : 'bg-[#0B0B0C] text-[#9E9EA8] hover:text-[#F4F4F0] border border-[#242429]'
+                  ? 'bg-[#111827] text-white shadow-xs'
+                  : 'bg-[#F7F8FA] text-[#4B5563] hover:text-[#111827] border border-[#E6E8EC]'
               }`}
             >
               {evt.name}
@@ -116,81 +116,81 @@ export default function OrganizerDashboardPage() {
 
       {loading || !analytics ? (
         <div className="py-20 text-center">
-          <div className="w-7 h-7 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-3" />
-          <p className="font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">Loading metrics...</p>
+          <div className="w-8 h-8 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm font-medium text-[#6B7280]">Loading box-office metrics...</p>
         </div>
       ) : (
         <div className="space-y-6">
           <div>
-            <h2 className="font-display text-2xl font-bold text-[#F4F4F0]">{analytics.eventName}</h2>
-            <p className="text-xs text-[#9E9EA8] mt-1">
-              Confirmed Stripe box office revenue, seat sell-through, and live gate check-in counts.
+            <h2 className="font-display text-2xl font-extrabold text-[#111827]">{analytics.eventName}</h2>
+            <p className="text-sm text-[#6B7280] mt-1">
+              Confirmed ticket revenue, stadium sell-through, and live door check-in progress.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="market-card rounded-3xl p-6 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] font-semibold text-[#9E9EA8] uppercase tracking-wider">
-                  Gross Revenue
-                </span>
-                <DollarSign className="w-4 h-4 text-[#D4FF00]" />
+                <span className="text-xs font-bold text-[#6B7280]">Gross Revenue</span>
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <DollarSign className="w-4.5 h-4.5" />
+                </div>
               </div>
               <p
-                className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] tabular-nums"
+                className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827] tabular-nums"
                 title={`IDR ${(analytics.totalRevenue || 0).toLocaleString('en-US')}`}
               >
                 {formatCompactPrice(analytics.totalRevenue || 0)}
               </p>
-              <span className="font-mono text-[11px] text-[#D4FF00] block">Confirmed orders</span>
+              <span className="text-xs font-semibold text-emerald-600 block">Confirmed Stripe sales</span>
             </div>
 
-            <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-3">
+            <div className="market-card rounded-3xl p-6 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] font-semibold text-[#9E9EA8] uppercase tracking-wider">
-                  Occupancy
-                </span>
-                <PieChart className="w-4 h-4 text-[#9E9EA8]" />
+                <span className="text-xs font-bold text-[#6B7280]">Occupancy Rate</span>
+                <div className="w-9 h-9 rounded-xl bg-[#FFF1F2] text-[#E11D48] flex items-center justify-center">
+                  <PieChart className="w-4.5 h-4.5" />
+                </div>
               </div>
-              <p className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
+              <p className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827] tabular-nums">
                 {analytics.occupancyRatePercent}%
               </p>
-              <div className="w-full bg-[#0B0B0C] h-1.5 rounded-xs overflow-hidden border border-[#242429]">
+              <div className="w-full bg-[#F1F3F7] h-2.5 rounded-full overflow-hidden">
                 <div
-                  className="bg-[#D4FF00] h-full"
+                  className="bg-[#E11D48] h-full rounded-full"
                   style={{ width: `${Math.min(100, analytics.occupancyRatePercent || 0)}%` }}
                 />
               </div>
             </div>
 
-            <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-3">
+            <div className="market-card rounded-3xl p-6 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] font-semibold text-[#9E9EA8] uppercase tracking-wider">
-                  Seats Sold
-                </span>
-                <Users className="w-4 h-4 text-[#9E9EA8]" />
+                <span className="text-xs font-bold text-[#6B7280]">Seats Sold</span>
+                <div className="w-9 h-9 rounded-xl bg-[#F1F3F7] text-[#374151] flex items-center justify-center">
+                  <Users className="w-4.5 h-4.5" />
+                </div>
               </div>
-              <p className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
+              <p className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827] tabular-nums">
                 {analytics.bookedSeats}{' '}
-                <span className="text-lg text-[#666670] font-normal">/ {analytics.totalCapacity}</span>
+                <span className="text-lg text-[#9CA3AF] font-semibold">/ {analytics.totalCapacity}</span>
               </p>
-              <span className="font-mono text-[11px] text-[#9E9EA8] block">
-                {analytics.availableSeats} open seats
+              <span className="text-xs font-medium text-[#6B7280] block">
+                {analytics.availableSeats} seats still open
               </span>
             </div>
 
-            <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-3">
+            <div className="market-card rounded-3xl p-6 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] font-semibold text-[#9E9EA8] uppercase tracking-wider">
-                  Gate Check-Ins
-                </span>
-                <UserCheck className="w-4 h-4 text-[#D4FF00]" />
+                <span className="text-xs font-bold text-[#6B7280]">Door Check-Ins</span>
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <UserCheck className="w-4.5 h-4.5" />
+                </div>
               </div>
-              <p className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
+              <p className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827] tabular-nums">
                 {analytics.totalCheckedIn}{' '}
-                <span className="text-lg text-[#666670] font-normal">/ {analytics.totalTicketsIssued}</span>
+                <span className="text-lg text-[#9CA3AF] font-semibold">/ {analytics.totalTicketsIssued}</span>
               </p>
-              <span className="font-mono text-[11px] text-[#9E9EA8] block">Verified at door</span>
+              <span className="text-xs font-medium text-[#6B7280] block">Verified at venue gate</span>
             </div>
           </div>
         </div>

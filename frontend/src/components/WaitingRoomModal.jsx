@@ -46,11 +46,11 @@ export default function WaitingRoomModal({ eventId, onTokenGranted, onClose }) {
   }, [eventId]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
+    <div className="fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white border border-[#E6E8EC] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#666670] hover:text-[#F4F4F0] p-1 rounded hover:bg-[#1E1E22] cursor-pointer"
+          className="absolute top-5 right-5 text-[#9CA3AF] hover:text-[#111827] p-1.5 rounded-full hover:bg-[#F1F3F7] cursor-pointer"
           aria-label="Close queue modal"
         >
           <X className="w-4 h-4" />
@@ -58,55 +58,55 @@ export default function WaitingRoomModal({ eventId, onTokenGranted, onClose }) {
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[#D4FF00]">
+            <span className="inline-flex items-center gap-1.5 bg-[#FFF1F2] text-[#E11D48] text-xs font-bold px-3 py-1 rounded-full">
               <Users className="w-3.5 h-3.5" />
               <span>Virtual Waiting Room</span>
             </span>
-            <h3 className="font-display text-2xl font-bold text-[#F4F4F0]">High-Demand Queue</h3>
-            <p className="text-xs text-[#9E9EA8] leading-relaxed">
-              Entry is metered automatically to prevent double-booking during peak ticket drops.
+            <h3 className="font-display text-2xl font-extrabold text-[#111827]">
+              Fair Ticket Queue
+            </h3>
+            <p className="text-xs sm:text-sm text-[#6B7280] leading-relaxed">
+              During high-demand drops, fans enter in order so nobody loses seats mid-checkout.
             </p>
           </div>
 
           {loading || !status ? (
-            <div className="py-8 text-center border border-[#242429] bg-[#0B0B0C] rounded-md">
-              <div className="w-6 h-6 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-2.5" />
-              <span className="font-mono text-xs text-[#9E9EA8]">Assigning queue position...</span>
+            <div className="py-8 text-center bg-[#F7F8FA] border border-[#E6E8EC] rounded-2xl">
+              <div className="w-7 h-7 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-2.5" />
+              <span className="text-xs font-medium text-[#6B7280]">Checking your spot in line...</span>
             </div>
           ) : status.status === 'SERVING' ? (
-            <div className="bg-[#17171A] border border-[#D4FF00]/50 rounded-md p-5 text-center space-y-3">
-              <CheckCircle2 className="w-8 h-8 text-[#D4FF00] mx-auto" />
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-3">
+              <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
               <div>
-                <p className="font-display text-lg font-bold text-[#F4F4F0]">Access Granted</p>
-                <p className="text-xs text-[#9E9EA8] mt-1">
-                  Position #1 · Direct floorplan access unlocked ({status.queueToken}).
+                <p className="font-display text-xl font-extrabold text-[#111827]">You&apos;re Up!</p>
+                <p className="text-xs text-[#4B5563] mt-1">
+                  Spot #1 verified · You have direct access to select seats now.
                 </p>
               </div>
               <button
                 onClick={() => onTokenGranted(status.queueToken)}
-                className="w-full py-2.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md text-xs transition-colors cursor-pointer"
+                className="w-full py-3 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold rounded-full text-sm shadow-sm transition-colors cursor-pointer"
               >
-                Enter Floorplan
+                Choose My Seats
               </button>
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="bg-[#0B0B0C] p-5 rounded-md border border-[#242429] flex items-baseline justify-between">
-                <span className="font-mono text-xs uppercase tracking-wider text-[#9E9EA8]">
-                  Queue Position
-                </span>
-                <span className="font-mono text-3xl font-bold text-[#D4FF00]">
+              <div className="bg-[#F7F8FA] p-5 rounded-2xl border border-[#E6E8EC] flex items-baseline justify-between">
+                <span className="text-xs font-semibold text-[#6B7280]">Your Place in Line</span>
+                <span className="font-display text-3xl font-extrabold text-[#E11D48]">
                   #{status.position}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-[#9E9EA8] bg-[#17171A] px-4 py-3 rounded-md border border-[#242429]">
-                <span className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-[#D4FF00]" />
-                  <span>Estimated wait</span>
+              <div className="flex items-center justify-between text-xs text-[#4B5563] bg-[#FFFBEB] px-4 py-3 rounded-2xl border border-amber-200">
+                <span className="flex items-center gap-2 font-medium text-amber-800">
+                  <Clock className="w-4 h-4 text-amber-600" />
+                  <span>Estimated wait time</span>
                 </span>
-                <span className="font-mono font-semibold text-[#F4F4F0]">
-                  ~{status.estimatedWaitSeconds}s
+                <span className="font-bold text-amber-900">
+                  ~{status.estimatedWaitSeconds} sec
                 </span>
               </div>
             </div>
@@ -115,9 +115,9 @@ export default function WaitingRoomModal({ eventId, onTokenGranted, onClose }) {
           {status?.status !== 'SERVING' && (
             <button
               onClick={onClose}
-              className="w-full py-2.5 bg-[#17171A] hover:bg-[#1E1E22] border border-[#242429] text-[#9E9EA8] hover:text-[#F4F4F0] font-semibold rounded-md text-xs transition-colors cursor-pointer"
+              className="w-full py-3 bg-[#F1F3F7] hover:bg-[#E5E7EB] text-[#4B5563] font-semibold rounded-full text-xs transition-colors cursor-pointer"
             >
-              Leave Queue
+              Leave Waiting Room
             </button>
           )}
         </div>

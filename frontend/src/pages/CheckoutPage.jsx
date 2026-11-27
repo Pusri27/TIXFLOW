@@ -6,10 +6,10 @@ import { formatPrice } from '../utils/formatPrice';
 import { Clock, CreditCard, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Copy, Check } from 'lucide-react';
 
 const TEST_CARDS = [
-  { label: 'Visa — Standard Approval', note: ' Instant success', number: '4242 4242 4242 4242', tone: 'text-[#D4FF00]' },
-  { label: 'Mastercard — Standard Approval', note: 'Instant success', number: '5555 5555 5555 4444', tone: 'text-[#D4FF00]' },
-  { label: '3D Secure Challenge', note: 'OTP verification', number: '4000 0000 0000 3020', tone: 'text-amber-400' },
-  { label: 'Declined Card', note: 'Simulates bank decline', number: '4000 0000 0000 0002', tone: 'text-red-400' },
+  { label: 'Visa — Instant Approval', note: 'Payment succeeds', number: '4242 4242 4242 4242', tone: 'text-emerald-600' },
+  { label: 'Mastercard — Instant Approval', note: 'Payment succeeds', number: '5555 5555 5555 4444', tone: 'text-emerald-600' },
+  { label: '3D Secure OTP Card', note: 'Triggers OTP check', number: '4000 0000 0000 3020', tone: 'text-amber-600' },
+  { label: 'Declined Test Card', note: 'Simulates bank decline', number: '4000 0000 0000 0002', tone: 'text-rose-600' },
 ];
 
 export default function CheckoutPage() {
@@ -129,67 +129,71 @@ export default function CheckoutPage() {
   if (loading || !booking) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-24 text-center">
-        <div className="w-7 h-7 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-3" />
-        <p className="font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">Preparing order summary...</p>
+        <div className="w-8 h-8 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm font-medium text-[#6B7280]">Preparing your checkout...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-8 py-10 sm:py-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-12">
       {!paymentDone ? (
         <div className="space-y-6">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#9E9EA8] hover:text-[#D4FF00] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#4B5563] hover:text-[#E11D48] transition-colors cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Floorplan</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Seat Map</span>
           </button>
 
-          {/* Hold Countdown Strip */}
+          {/* Seat Hold Timer Banner */}
           <div
-            className={`border rounded-lg p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+            className={`border rounded-2xl p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
               timeLeft < 60
-                ? 'bg-red-500/10 border-red-500/40'
-                : 'bg-[#121214] border-[#242429]'
+                ? 'bg-red-50 border-red-200'
+                : 'bg-[#FFFBEB] border-amber-200'
             }`}
           >
             <div className="flex items-center gap-3">
-              <Clock className={`w-5 h-5 ${timeLeft < 60 ? 'text-red-400' : 'text-[#D4FF00]'}`} />
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  timeLeft < 60 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'
+                }`}
+              >
+                <Clock className="w-5 h-5" />
+              </div>
               <div>
-                <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#9E9EA8]">
-                  Seats Held For
-                </p>
+                <p className="text-xs font-semibold text-[#4B5563]">Seats reserved for you</p>
                 <p
-                  className={`font-mono text-2xl font-bold tabular-nums leading-tight ${
-                    timeLeft < 60 ? 'text-red-400' : 'text-[#F4F4F0]'
+                  className={`font-display text-2xl font-extrabold tabular-nums leading-tight ${
+                    timeLeft < 60 ? 'text-red-600' : 'text-amber-900'
                   }`}
                 >
                   {formatTimer(timeLeft)}
                 </p>
               </div>
             </div>
-            <p className="text-xs text-[#9E9EA8]">
-              Complete checkout before the timer expires to keep your seats.
+            <p className="text-xs sm:text-sm text-[#4B5563]">
+              Complete payment before the timer runs out to keep these exact seats.
             </p>
           </div>
 
           {(timeLeft === 0 || expiredError) && (
-            <div className="bg-red-500/10 border border-red-500/40 text-red-200 text-xs p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-red-50 border border-red-200 text-red-800 text-xs sm:text-sm p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>
                   {expiredError
-                    ? `${expiredError}. Please return to the floorplan and pick available seats.`
+                    ? `${expiredError}. Please return to the stadium map and pick seats again.`
                     : 'Your seat hold has expired.'}
                 </span>
               </div>
               <button
                 onClick={() => navigate(-1)}
-                className="shrink-0 bg-[#121214] hover:bg-[#17171A] border border-red-500/40 text-[#F4F4F0] px-3.5 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+                className="shrink-0 bg-white hover:bg-red-100 border border-red-200 text-red-700 px-4 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer"
               >
-                Select Seats Again
+                Choose Seats Again
               </button>
             </div>
           )}
@@ -197,35 +201,33 @@ export default function CheckoutPage() {
           {/* Main Checkout Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Order Summary */}
-            <div className="lg:col-span-7 bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-6">
-              <div className="border-b border-[#242429] pb-4 flex items-baseline justify-between gap-4">
+            <div className="lg:col-span-7 market-card rounded-3xl p-6 sm:p-8 space-y-6">
+              <div className="border-b border-[#F1F3F7] pb-4 flex items-start justify-between gap-4">
                 <div>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#666670] block">
-                    Order Review
-                  </span>
-                  <h1 className="font-display text-2xl font-bold text-[#F4F4F0] mt-0.5">
+                  <span className="text-xs font-semibold text-[#6B7280] block">Order Summary</span>
+                  <h1 className="font-display text-2xl font-extrabold text-[#111827] mt-0.5">
                     {booking.eventName}
                   </h1>
                 </div>
-                <span className="font-mono text-xs text-[#D4FF00] bg-[#17171A] border border-[#242429] px-2.5 py-1 rounded">
+                <span className="font-mono text-xs font-semibold text-[#E11D48] bg-[#FFF1F2] px-3 py-1 rounded-full shrink-0">
                   {booking.bookingCode}
                 </span>
               </div>
 
               <div className="space-y-2.5">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#666670] block">
-                  Tickets ({(booking.items || []).length})
+                <span className="text-xs font-bold text-[#4B5563] block">
+                  Selected Seats ({(booking.items || []).length})
                 </span>
-                <div className="divide-y divide-[#242429] border border-[#242429] rounded-md bg-[#0B0B0C]">
+                <div className="divide-y divide-[#E6E8EC] border border-[#E6E8EC] rounded-2xl bg-[#F7F8FA]">
                   {(booking.items || []).map((item) => (
-                    <div key={item.id} className="flex justify-between items-center px-4 py-3 text-xs">
+                    <div key={item.id} className="flex justify-between items-center px-4 py-3.5 text-sm">
                       <div className="flex items-center gap-3">
-                        <span className="font-mono font-bold text-[#0B0B0C] bg-[#D4FF00] px-1.5 py-0.5 rounded-sm">
+                        <span className="font-bold text-white bg-[#111827] px-2.5 py-0.5 rounded-full text-xs">
                           {item.rowLabel}-{item.seatNumber}
                         </span>
-                        <span className="text-[#F4F4F0] font-medium">{item.categoryName}</span>
+                        <span className="text-[#111827] font-medium">{item.categoryName}</span>
                       </div>
-                      <span className="font-mono font-semibold text-[#F4F4F0]">
+                      <span className="font-bold text-[#111827]">
                         {formatPrice(item.price)}
                       </span>
                     </div>
@@ -233,11 +235,9 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="border-t border-[#242429] pt-5 flex items-baseline justify-between">
-                <span className="font-mono text-xs uppercase tracking-wider text-[#9E9EA8]">
-                  Total Due
-                </span>
-                <span className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] tabular-nums">
+              <div className="border-t border-[#F1F3F7] pt-5 flex items-baseline justify-between">
+                <span className="text-sm font-semibold text-[#4B5563]">Total Payment</span>
+                <span className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827] tabular-nums">
                   {formatPrice(booking.totalAmount)}
                 </span>
               </div>
@@ -245,12 +245,12 @@ export default function CheckoutPage() {
               <button
                 onClick={handlePayNow}
                 disabled={paying || timeLeft === 0}
-                className="w-full py-4 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="w-full py-4 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold rounded-full shadow-md shadow-rose-500/25 transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-sm"
               >
                 {paying ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-[#0B0B0C]/30 border-t-[#0B0B0C] rounded-full animate-spin" />
-                    <span>Redirecting to Stripe...</span>
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    <span>Connecting to Stripe Checkout...</span>
                   </>
                 ) : (
                   <>
@@ -263,18 +263,18 @@ export default function CheckoutPage() {
             </div>
 
             {/* Sandbox Test Cards Helper */}
-            <div className="lg:col-span-5 bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-[#242429] pb-3">
-                <span className="font-mono text-xs font-semibold text-[#F4F4F0] uppercase tracking-wider">
+            <div className="lg:col-span-5 market-card rounded-3xl p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-[#F1F3F7] pb-3">
+                <span className="font-display text-base font-bold text-[#111827]">
                   Stripe Sandbox Cards
                 </span>
-                <span className="font-mono text-[10px] text-[#D4FF00] border border-[#D4FF00]/40 px-2 py-0.5 rounded-sm">
-                  TEST MODE
+                <span className="text-[11px] font-bold text-[#E11D48] bg-[#FFF1F2] px-2.5 py-0.5 rounded-full">
+                  Demo Mode
                 </span>
               </div>
 
-              <p className="text-xs text-[#9E9EA8] leading-relaxed">
-                Click any card number to copy for <span className="font-mono text-[#F4F4F0]">checkout.stripe.com</span>. Use any future expiry (<span className="font-mono text-[#F4F4F0]">12/29</span>) and CVC <span className="font-mono text-[#F4F4F0]">123</span>.
+              <p className="text-xs text-[#6B7280] leading-relaxed">
+                Tap any test card below to copy it for <span className="font-semibold text-[#111827]">checkout.stripe.com</span>. Enter any future expiry (like <span className="font-semibold text-[#111827]">12/29</span>) and CVC <span className="font-semibold text-[#111827]">123</span>.
               </p>
 
               <div className="space-y-2">
@@ -285,18 +285,18 @@ export default function CheckoutPage() {
                       key={card.number}
                       type="button"
                       onClick={() => handleCopyCard(card.number)}
-                      className="w-full text-left flex items-center justify-between bg-[#0B0B0C] hover:bg-[#17171A] border border-[#242429] px-3 py-2.5 rounded-md transition-colors cursor-pointer group"
+                      className="w-full text-left flex items-center justify-between bg-[#F7F8FA] hover:bg-[#F1F3F7] border border-[#E6E8EC] px-3.5 py-2.5 rounded-2xl transition-colors cursor-pointer group"
                     >
                       <div>
-                        <span className="text-xs font-medium text-[#F4F4F0] block">{card.label}</span>
-                        <span className={`font-mono text-[10px] ${card.tone}`}>{card.note}</span>
+                        <span className="text-xs font-bold text-[#111827] block">{card.label}</span>
+                        <span className={`text-[11px] font-medium ${card.tone}`}>{card.note}</span>
                       </div>
-                      <div className="flex items-center gap-2 font-mono text-xs text-[#F4F4F0] bg-[#121214] border border-[#242429] px-2 py-1 rounded">
+                      <div className="flex items-center gap-2 font-mono text-xs font-semibold text-[#111827] bg-white border border-[#E6E8EC] px-2.5 py-1 rounded-lg shadow-2xs">
                         <span>{card.number}</span>
                         {isCopied ? (
-                          <Check className="w-3 h-3 text-[#D4FF00]" />
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
                         ) : (
-                          <Copy className="w-3 h-3 text-[#666670] group-hover:text-[#D4FF00]" />
+                          <Copy className="w-3.5 h-3.5 text-[#9CA3AF] group-hover:text-[#E11D48]" />
                         )}
                       </div>
                     </button>
@@ -308,43 +308,43 @@ export default function CheckoutPage() {
         </div>
       ) : (
         /* Confirmed Receipt */
-        <div className="bg-[#121214] border border-[#242429] rounded-lg p-8 sm:p-10 max-w-xl mx-auto space-y-6">
-          <div className="w-12 h-12 bg-[#D4FF00] text-[#0B0B0C] rounded-md flex items-center justify-center">
-            <CheckCircle2 className="w-6 h-6" />
+        <div className="market-card rounded-3xl p-8 sm:p-10 max-w-xl mx-auto space-y-6 text-center">
+          <div className="w-16 h-16 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-8 h-8" />
           </div>
 
           <div className="space-y-1.5">
-            <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00]">
-              Order Confirmed
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+              Booking Confirmed
             </span>
-            <h2 className="font-display text-3xl font-bold text-[#F4F4F0]">
-              Passes Ready
+            <h2 className="font-display text-3xl font-extrabold text-[#111827]">
+              You&apos;re Going!
             </h2>
-            <p className="text-[#9E9EA8] text-sm">
-              Your seats for <span className="text-[#F4F4F0] font-semibold">{booking.eventName}</span> are locked in and mobile QR passes have been issued.
+            <p className="text-[#4B5563] text-sm">
+              Your tickets for <span className="text-[#111827] font-bold">{booking.eventName}</span> are ready in your wallet.
             </p>
           </div>
 
-          <div className="bg-[#0B0B0C] border border-[#242429] p-4 rounded-md font-mono text-xs space-y-2.5">
+          <div className="bg-[#F7F8FA] border border-[#E6E8EC] p-4 rounded-2xl text-xs space-y-2.5 text-left">
             <div className="flex justify-between">
-              <span className="text-[#666670]">Reference</span>
-              <span className="text-[#D4FF00] font-semibold">{booking.bookingCode}</span>
+              <span className="text-[#6B7280]">Booking Reference</span>
+              <span className="font-mono font-bold text-[#111827]">{booking.bookingCode}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#666670]">Status</span>
-              <span className="text-[#F4F4F0]">PAID · STRIPE</span>
+              <span className="text-[#6B7280]">Payment Status</span>
+              <span className="font-bold text-emerald-600">Paid via Stripe</span>
             </div>
-            <div className="flex justify-between pt-2 border-t border-[#242429]">
-              <span className="text-[#666670]">Amount Paid</span>
-              <span className="text-[#F4F4F0] font-bold">{formatPrice(booking.totalAmount)}</span>
+            <div className="flex justify-between pt-2 border-t border-[#E6E8EC]">
+              <span className="text-[#6B7280]">Total Paid</span>
+              <span className="font-bold text-[#111827]">{formatPrice(booking.totalAmount)}</span>
             </div>
           </div>
 
           <button
             onClick={() => navigate('/my-tickets')}
-            className="w-full py-3.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm"
+            className="w-full py-4 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold rounded-full shadow-md shadow-rose-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
           >
-            <span>Open My Passes</span>
+            <span>View My Tickets</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

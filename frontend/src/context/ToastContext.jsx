@@ -22,55 +22,55 @@ export function ToastProvider({ children }) {
   const getToastIcon = (type) => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 className="w-4 h-4 text-[#D4FF00] shrink-0 mt-0.5" />;
+        return <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />;
+        return <AlertCircle className="w-5 h-5 text-[#E11D48] shrink-0 mt-0.5" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />;
+        return <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />;
       default:
-        return <Info className="w-4 h-4 text-[#D4FF00] shrink-0 mt-0.5" />;
+        return <Info className="w-5 h-5 text-[#E11D48] shrink-0 mt-0.5" />;
     }
   };
 
   const getToastBorder = (type) => {
     switch (type) {
       case 'success':
-        return 'border-[#D4FF00]/50';
+        return 'border-emerald-200';
       case 'error':
-        return 'border-red-500/50';
+        return 'border-rose-200';
       case 'warning':
-        return 'border-amber-500/50';
+        return 'border-amber-200';
       default:
-        return 'border-[#34343C]';
+        return 'border-[#E6E8EC]';
     }
   };
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0">
+      <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto bg-[#121214] border ${getToastBorder(
+            className={`pointer-events-auto bg-white border ${getToastBorder(
               toast.type
-            )} rounded-lg p-4 shadow-2xl flex items-start gap-3 transition-all duration-200`}
+            )} rounded-2xl p-4 shadow-xl shadow-slate-900/10 flex items-start gap-3 transition-all duration-200`}
           >
             {getToastIcon(toast.type)}
             <div className="flex-1 min-w-0 pr-2">
               {toast.title && (
-                <h4 className="font-mono font-semibold text-[11px] text-[#F4F4F0] uppercase tracking-wider">
+                <h4 className="font-display font-bold text-sm text-[#111827]">
                   {toast.title}
                 </h4>
               )}
-              <p className="text-xs text-[#9E9EA8] leading-relaxed mt-0.5">{toast.message}</p>
+              <p className="text-xs text-[#4B5563] leading-relaxed mt-0.5">{toast.message}</p>
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-[#666670] hover:text-[#F4F4F0] transition-colors p-1 rounded hover:bg-[#1E1E22] cursor-pointer"
+              className="text-[#9CA3AF] hover:text-[#111827] transition-colors p-1 rounded-full hover:bg-[#F1F3F7] cursor-pointer"
               aria-label="Dismiss notification"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         ))}

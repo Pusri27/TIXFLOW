@@ -94,8 +94,8 @@ export default function EditEventPage() {
   if (loading) {
     return (
       <div className="py-24 text-center">
-        <div className="w-7 h-7 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-3" />
-        <p className="font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">Loading event...</p>
+        <div className="w-8 h-8 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm font-medium text-[#6B7280]">Loading event details...</p>
       </div>
     );
   }
@@ -105,31 +105,31 @@ export default function EditEventPage() {
       <div className="flex items-center justify-between">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-[#9E9EA8] hover:text-[#D4FF00] transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#4B5563] hover:text-[#E11D48] transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>All Events</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Events</span>
         </Link>
-        <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] bg-[#121214] border border-[#242429] px-2.5 py-1 rounded">
+        <span className="text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3.5 py-1.5 rounded-full">
           Edit Event #{id}
         </span>
       </div>
 
       <div>
-        <h1 className="font-display text-3xl font-bold text-[#F4F4F0] tracking-tight">
-          Edit Listing
+        <h1 className="font-display text-3xl font-extrabold text-[#111827]">
+          Edit Event Details
         </h1>
-        <p className="text-[#9E9EA8] text-xs sm:text-sm mt-1">
-          Update schedule, poster artwork, category, and description.
+        <p className="text-[#6B7280] text-sm mt-1">
+          Update schedule, poster image, category, or event description.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-6"
+        className="market-card rounded-3xl p-6 sm:p-9 space-y-6"
       >
         <div>
-          <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
+          <label className="block text-xs font-bold text-[#374151] mb-2">
             Event Title
           </label>
           <input
@@ -138,51 +138,51 @@ export default function EditEventPage() {
             required
             value={form.name}
             onChange={handleChange}
-            className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] rounded-md px-3.5 py-3 text-[#F4F4F0] text-sm outline-none"
+            className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl px-4 py-3.5 text-[#111827] text-sm outline-none"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
+            <label className="block text-xs font-bold text-[#374151] mb-2">
               Category
             </label>
             <select
               name="category"
               value={form.category}
               onChange={handleChange}
-              className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] rounded-md px-3.5 py-3 text-[#F4F4F0] text-sm outline-none"
+              className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl px-4 py-3.5 text-[#111827] text-sm outline-none"
             >
-              <option value="CONCERT">Music &amp; Concerts</option>
-              <option value="MOVIE">Film &amp; Screenings</option>
-              <option value="SPORTS">Sports</option>
-              <option value="THEATER">Stage &amp; Arts</option>
+              <option value="CONCERT">Concerts &amp; Music</option>
+              <option value="SPORTS">Sports &amp; Stadiums</option>
+              <option value="MOVIE">Cinema &amp; Premieres</option>
+              <option value="THEATER">Theater &amp; Arts</option>
             </select>
           </div>
 
           <div>
-            <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
-              Poster Artwork URL
+            <label className="block text-xs font-bold text-[#374151] mb-2">
+              Poster Image URL
             </label>
             <div className="relative">
-              <ImageIcon className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <ImageIcon className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2" />
               <input
                 type="url"
                 name="posterUrl"
                 value={form.posterUrl}
                 onChange={handleChange}
-                className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] rounded-md pl-10 pr-3.5 py-3 text-[#F4F4F0] text-sm outline-none"
+                className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl pl-11 pr-4 py-3.5 text-[#111827] text-sm outline-none"
               />
             </div>
           </div>
         </div>
 
         {form.posterUrl && (
-          <div className="bg-[#0B0B0C] border border-[#242429] p-3.5 rounded-md flex items-center gap-4">
-            <div className="w-24 h-16 rounded overflow-hidden bg-[#17171A] shrink-0 border border-[#242429]">
+          <div className="bg-[#F7F8FA] border border-[#E6E8EC] p-3.5 rounded-2xl flex items-center gap-4">
+            <div className="w-24 h-16 rounded-xl overflow-hidden bg-white shrink-0 border border-[#E6E8EC]">
               <img
                 src={form.posterUrl}
-                alt="Artwork preview"
+                alt="Poster preview"
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.onerror = null;
@@ -191,20 +191,20 @@ export default function EditEventPage() {
               />
             </div>
             <div className="min-w-0">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-[#D4FF00] block">
-                Artwork Preview
+              <span className="text-[11px] font-bold text-[#E11D48] block">
+                Cover Preview
               </span>
-              <p className="text-xs text-[#F4F4F0] font-semibold truncate mt-0.5">
+              <p className="text-sm text-[#111827] font-bold truncate">
                 {form.name || 'Untitled Event'}
               </p>
-              <p className="font-mono text-[11px] text-[#666670] truncate">{form.posterUrl}</p>
+              <p className="text-xs text-[#6B7280] truncate">{form.posterUrl}</p>
             </div>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
-            <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
+            <label className="block text-xs font-bold text-[#374151] mb-2">
               Start Date &amp; Time
             </label>
             <input
@@ -213,12 +213,12 @@ export default function EditEventPage() {
               required
               value={form.startTime}
               onChange={handleChange}
-              className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] rounded-md px-3.5 py-3 text-[#F4F4F0] text-sm outline-none"
+              className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl px-4 py-3.5 text-[#111827] text-sm outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
+            <label className="block text-xs font-bold text-[#374151] mb-2">
               End Date &amp; Time
             </label>
             <input
@@ -227,14 +227,14 @@ export default function EditEventPage() {
               required
               value={form.endTime}
               onChange={handleChange}
-              className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] rounded-md px-3.5 py-3 text-[#F4F4F0] text-sm outline-none"
+              className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl px-4 py-3.5 text-[#111827] text-sm outline-none"
             />
           </div>
         </div>
 
         <div>
-          <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
-            Lineup &amp; Event Info
+          <label className="block text-xs font-bold text-[#374151] mb-2">
+            About This Event
           </label>
           <textarea
             name="description"
@@ -242,17 +242,17 @@ export default function EditEventPage() {
             required
             value={form.description}
             onChange={handleChange}
-            className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] rounded-md px-3.5 py-3 text-[#F4F4F0] text-sm outline-none"
+            className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl px-4 py-3.5 text-[#111827] text-sm outline-none"
           />
         </div>
 
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-3.5 rounded-md bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          className="w-full py-4 rounded-full bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold text-sm shadow-md shadow-rose-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
-          <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+          <span>{saving ? 'Saving Changes...' : 'Save Changes'}</span>
         </button>
       </form>
     </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ticketApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
-import { Calendar, MapPin, Download, QrCode, X, Send, RefreshCw, CheckCircle2, Lock, ArrowUpRight, Copy, Check } from 'lucide-react';
+import { Calendar, MapPin, Download, QrCode, X, Send, RefreshCw, CheckCircle2, Lock, ArrowRight, Copy, Check, Ticket } from 'lucide-react';
 
 export default function MyTicketsPage() {
   const { showToast } = useToast();
@@ -23,8 +23,8 @@ export default function MyTicketsPage() {
       setShowSuccessBanner(true);
       showToast({
         type: 'success',
-        title: 'Order Confirmed',
-        message: 'Your payment is verified. Dynamic QR passes and PDF downloads are ready.',
+        title: 'Tickets Confirmed!',
+        message: 'Your payment is verified. Your mobile QR passes and PDF tickets are ready.',
       });
       window.history.replaceState(null, '', window.location.pathname);
     }
@@ -74,8 +74,8 @@ export default function MyTicketsPage() {
       await ticketApi.transfer(transferTicketTarget.id, recipientEmail.trim());
       showToast({
         type: 'success',
-        title: 'Pass Transferred',
-        message: `Ownership transferred to ${recipientEmail.trim()}.`,
+        title: 'Ticket Sent',
+        message: `Ticket transferred to ${recipientEmail.trim()}.`,
       });
       setTransferTicketTarget(null);
       setRecipientEmail('');
@@ -85,7 +85,7 @@ export default function MyTicketsPage() {
       showToast({
         type: 'error',
         title: 'Transfer Unavailable',
-        message: err.response?.data?.message || err.message || 'Checked-in passes cannot be transferred.',
+        message: err.response?.data?.message || err.message || 'Checked-in tickets cannot be transferred.',
       });
     } finally {
       setTransferring(false);
@@ -94,44 +94,45 @@ export default function MyTicketsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-12 space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#242429] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] block mb-1">
-            Pass Wallet
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3 py-1 rounded-full mb-2">
+            <Ticket className="w-3.5 h-3.5" />
+            <span>Ticket Wallet</span>
           </span>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#F4F4F0] tracking-tight">
-            My Passes
+          <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-[#111827]">
+            My Tickets
           </h1>
-          <p className="text-[#9E9EA8] text-xs sm:text-sm mt-1">
-            Present rotating QR codes at the gate, download PDF stubs, or transfer unused passes.
+          <p className="text-[#6B7280] text-sm mt-1">
+            Show your live QR pass at the entrance, download PDF tickets, or send a ticket to a friend.
           </p>
         </div>
 
         {!loading && (
-          <span className="font-mono text-xs text-[#9E9EA8] bg-[#121214] border border-[#242429] px-3 py-1.5 rounded-md w-fit">
-            {tickets.length} {tickets.length === 1 ? 'active pass' : 'passes'}
+          <span className="text-xs font-bold text-[#4B5563] bg-white border border-[#E6E8EC] px-4 py-2 rounded-full w-fit shadow-2xs">
+            {tickets.length} {tickets.length === 1 ? 'ticket' : 'tickets'}
           </span>
         )}
       </div>
 
       {showSuccessBanner && (
-        <div className="p-5 bg-[#121214] border border-[#D4FF00]/50 rounded-lg flex items-start sm:items-center justify-between gap-4">
+        <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-3xl flex items-start sm:items-center justify-between gap-4">
           <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-9 h-9 rounded bg-[#D4FF00] text-[#0B0B0C] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-display text-base font-bold text-[#F4F4F0]">
-                Payment Confirmed
+              <h3 className="font-display text-base font-extrabold text-emerald-950">
+                Booking Confirmed!
               </h3>
-              <p className="text-[#9E9EA8] text-xs mt-0.5">
-                Your Stripe checkout succeeded. Entry passes and PDF stubs are active below.
+              <p className="text-emerald-800 text-xs sm:text-sm mt-0.5">
+                Your Stripe payment succeeded. Your QR passes and PDF downloads are active below.
               </p>
             </div>
           </div>
           <button
             onClick={() => setShowSuccessBanner(false)}
-            className="text-[#666670] hover:text-[#F4F4F0] p-1.5 rounded hover:bg-[#17171A] cursor-pointer shrink-0"
+            className="text-emerald-700 hover:text-emerald-950 p-1.5 rounded-full hover:bg-emerald-100 cursor-pointer shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -140,21 +141,24 @@ export default function MyTicketsPage() {
 
       {loading ? (
         <div className="py-24 text-center">
-          <div className="w-7 h-7 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-3" />
-          <p className="font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">Loading passes...</p>
+          <div className="w-8 h-8 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm font-medium text-[#6B7280]">Loading your tickets...</p>
         </div>
       ) : tickets.length === 0 ? (
-        <div className="text-center py-20 bg-[#121214] rounded-lg border border-[#242429] px-6 space-y-4">
-          <h3 className="font-display text-xl font-bold text-[#F4F4F0]">No Passes Yet</h3>
-          <p className="text-[#9E9EA8] text-xs max-w-md mx-auto">
-            Confirmed tickets appear here automatically with rotating gate QR tokens and downloadable PDFs.
+        <div className="text-center py-20 market-card rounded-3xl px-6 space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#FFF1F2] text-[#E11D48] flex items-center justify-center mx-auto">
+            <Ticket className="w-7 h-7" />
+          </div>
+          <h3 className="font-display text-xl font-extrabold text-[#111827]">No Tickets Yet</h3>
+          <p className="text-[#6B7280] text-sm max-w-md mx-auto">
+            Once you book seats for an upcoming concert, match, or show, your passes will appear right here.
           </p>
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold px-5 py-2.5 rounded-md text-xs transition-colors"
+            className="inline-flex items-center gap-2 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold px-6 py-3 rounded-full text-sm shadow-sm transition-colors"
           >
-            <span>Browse Events</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <span>Explore Events</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       ) : (
@@ -162,35 +166,35 @@ export default function MyTicketsPage() {
           {tickets.map((t) => (
             <div
               key={t.id}
-              className="bg-[#121214] border border-[#242429] rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-12"
+              className="market-card rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-12 relative"
             >
-              {/* Left Main Ticket Face */}
+              {/* Left Boarding-Pass Face */}
               <div className="md:col-span-8 p-6 sm:p-7 space-y-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 font-mono text-[11px]">
-                    <span className="text-[#F4F4F0] bg-[#17171A] border border-[#242429] px-2.5 py-0.5 rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-semibold text-[#4B5563] bg-[#F7F8FA] border border-[#E6E8EC] px-3 py-1 rounded-full">
                       {t.ticketCode}
                     </span>
                     {t.isUsed ? (
-                      <span className="bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-semibold px-2.5 py-0.5 rounded inline-flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        CHECKED IN
+                      <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs px-3 py-1 rounded-full inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Checked In
                       </span>
                     ) : (
-                      <span className="bg-[#D4FF00] text-[#0B0B0C] font-bold px-2 py-0.5 rounded-sm">
-                        VALID PASS
+                      <span className="bg-[#FFF1F2] text-[#E11D48] font-bold text-xs px-3 py-1 rounded-full">
+                        Active Pass
                       </span>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-display text-2xl font-bold text-[#F4F4F0] tracking-tight">
+                  <h3 className="font-display text-2xl font-extrabold text-[#111827]">
                     {t.eventName}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-[#9E9EA8] mt-2">
+                  <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-[#4B5563] mt-2 font-medium">
                     <span className="inline-flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-[#D4FF00]" />
+                      <Calendar className="w-4 h-4 text-[#E11D48]" />
                       {new Date(t.eventStartTime).toLocaleString('en-US', {
                         weekday: 'short',
                         month: 'short',
@@ -201,56 +205,60 @@ export default function MyTicketsPage() {
                       })}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-[#9E9EA8]" />
+                      <MapPin className="w-4 h-4 text-[#6B7280]" />
                       {t.venueName}
                     </span>
                   </div>
                 </div>
 
-                {/* Seat Coordinates Grid */}
-                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-[#242429] font-mono">
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#666670] block">Row</span>
-                    <span className="text-base font-bold text-[#F4F4F0]">{t.rowLabel}</span>
+                {/* Boarding Pass Seat Details */}
+                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-[#F1F3F7]">
+                  <div className="bg-[#F7F8FA] rounded-2xl p-3">
+                    <span className="text-[11px] font-medium text-[#6B7280] block">Row</span>
+                    <span className="font-display text-lg font-extrabold text-[#111827]">{t.rowLabel}</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#666670] block">Seat</span>
-                    <span className="text-base font-bold text-[#F4F4F0]">#{t.seatNumber}</span>
+                  <div className="bg-[#F7F8FA] rounded-2xl p-3">
+                    <span className="text-[11px] font-medium text-[#6B7280] block">Seat</span>
+                    <span className="font-display text-lg font-extrabold text-[#111827]">#{t.seatNumber}</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#666670] block">Section</span>
-                    <span className="text-xs font-semibold text-[#D4FF00]">{t.categoryName}</span>
+                  <div className="bg-[#F7F8FA] rounded-2xl p-3">
+                    <span className="text-[11px] font-medium text-[#6B7280] block">Section</span>
+                    <span className="text-xs font-bold text-[#E11D48] line-clamp-1 mt-1">{t.categoryName}</span>
                   </div>
                 </div>
 
                 {t.isUsed && t.usedAt && (
-                  <p className="font-mono text-[11px] text-emerald-400">
-                    Scanned at gate · {new Date(t.usedAt).toLocaleString()}
+                  <p className="text-xs font-semibold text-emerald-700">
+                    ✓ Scanned at venue door · {new Date(t.usedAt).toLocaleString()}
                   </p>
                 )}
               </div>
 
-              {/* Right Perforated Action Stub */}
-              <div className="md:col-span-4 border-t md:border-t-0 md:border-l border-dashed border-[#2E2E36] bg-[#0E0E11] p-6 flex flex-col justify-center gap-2.5">
+              {/* Right Perforated Ticket Stub */}
+              <div className="md:col-span-4 border-t md:border-t-0 md:border-l-2 border-dashed border-[#E5E7EB] bg-[#FAFBFD] p-6 flex flex-col justify-center gap-3 relative">
+                {/* Circular Boarding-Pass Notches (Desktop) */}
+                <span className="hidden md:block w-5 h-5 rounded-full bg-[#F7F8FA] border border-[#E6E8EC] absolute -left-2.5 -top-2.5" />
+                <span className="hidden md:block w-5 h-5 rounded-full bg-[#F7F8FA] border border-[#E6E8EC] absolute -left-2.5 -bottom-2.5" />
+
                 <button
                   onClick={() => setActiveQrTicket(t)}
-                  className="w-full flex items-center justify-center gap-2 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] px-4 py-3 rounded-md text-xs font-bold transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#E11D48] hover:bg-[#BE123C] text-white px-4 py-3.5 rounded-full text-xs sm:text-sm font-bold shadow-sm shadow-rose-500/20 transition-all cursor-pointer"
                 >
                   <QrCode className="w-4 h-4" />
-                  <span>Gate QR Code</span>
+                  <span>Show Gate QR</span>
                 </button>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   <button
                     onClick={() => setTransferTicketTarget(t)}
                     disabled={t.isUsed}
-                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-xs font-semibold border transition-colors ${
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-bold border transition-colors ${
                       t.isUsed
-                        ? 'bg-[#121214] border-[#1E1E22] text-[#666670] cursor-not-allowed'
-                        : 'bg-[#121214] hover:bg-[#17171A] text-[#F4F4F0] border-[#242429] cursor-pointer'
+                        ? 'bg-[#F1F3F7] border-transparent text-[#9CA3AF] cursor-not-allowed'
+                        : 'bg-white hover:bg-[#F7F8FA] text-[#111827] border-[#E6E8EC] cursor-pointer'
                     }`}
                   >
-                    {t.isUsed ? <Lock className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
+                    {t.isUsed ? <Lock className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5 text-[#E11D48]" />}
                     <span>{t.isUsed ? 'Used' : 'Transfer'}</span>
                   </button>
 
@@ -259,14 +267,14 @@ export default function MyTicketsPage() {
                       href={t.pdfUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-center gap-1.5 bg-[#121214] hover:bg-[#17171A] text-[#F4F4F0] border border-[#242429] px-3 py-2.5 rounded-md text-xs font-semibold transition-colors"
+                      className="flex items-center justify-center gap-1.5 bg-white hover:bg-[#F7F8FA] text-[#111827] border border-[#E6E8EC] px-3 py-2.5 rounded-full text-xs font-bold transition-colors"
                     >
-                      <Download className="w-3.5 h-3.5" />
+                      <Download className="w-3.5 h-3.5 text-[#4B5563]" />
                       <span>PDF</span>
                     </a>
                   ) : (
-                    <span className="flex items-center justify-center bg-[#121214] text-[#666670] border border-[#1E1E22] px-3 py-2.5 rounded-md text-xs font-mono">
-                      NO PDF
+                    <span className="flex items-center justify-center bg-[#F1F3F7] text-[#9CA3AF] px-3 py-2.5 rounded-full text-xs font-semibold">
+                      No PDF
                     </span>
                   )}
                 </div>
@@ -278,32 +286,32 @@ export default function MyTicketsPage() {
 
       {/* Rotating Gate QR Modal */}
       {activeQrTicket && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-7 max-w-sm w-full text-center relative shadow-2xl space-y-5">
+        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#E6E8EC] rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center relative shadow-2xl space-y-5">
             <button
               onClick={() => {
                 setActiveQrTicket(null);
                 setDynamicQrData(null);
               }}
-              className="absolute top-4 right-4 text-[#666670] hover:text-[#F4F4F0] p-1 rounded hover:bg-[#1E1E22] cursor-pointer"
+              className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#111827] p-1.5 rounded-full hover:bg-[#F1F3F7] cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="space-y-1 pt-1">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-[#D4FF00] block">
-                {activeQrTicket.isUsed ? 'Checked-In Pass' : 'Live Entry Token'}
+              <span className="inline-block text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3 py-1 rounded-full">
+                {activeQrTicket.isUsed ? 'Checked-In Ticket' : 'Live Entry Pass'}
               </span>
-              <h3 className="font-display text-xl font-bold text-[#F4F4F0]">
+              <h3 className="font-display text-xl font-extrabold text-[#111827] pt-1">
                 {activeQrTicket.eventName}
               </h3>
-              <p className="font-mono text-xs text-[#9E9EA8]">
+              <p className="text-xs font-semibold text-[#6B7280]">
                 Row {activeQrTicket.rowLabel} · Seat #{activeQrTicket.seatNumber} ({activeQrTicket.categoryName})
               </p>
             </div>
 
             {dynamicQrData ? (
-              <div className="bg-white p-4 rounded-md inline-block border-2 border-[#D4FF00]">
+              <div className="bg-white p-4 rounded-2xl inline-block border-2 border-[#E6E8EC] shadow-sm">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                     dynamicQrData.qrPayload
@@ -313,15 +321,15 @@ export default function MyTicketsPage() {
                 />
               </div>
             ) : (
-              <div className="w-56 h-56 bg-[#0B0B0C] rounded-md mx-auto flex items-center justify-center font-mono text-xs text-[#9E9EA8] border border-[#242429]">
-                Generating token...
+              <div className="w-56 h-56 bg-[#F7F8FA] rounded-2xl mx-auto flex items-center justify-center text-xs font-medium text-[#6B7280] border border-[#E6E8EC]">
+                Generating secure QR...
               </div>
             )}
 
             {!activeQrTicket.isUsed && (
-              <div className="flex items-center justify-center gap-2 font-mono text-[11px] text-[#D4FF00]">
-                <RefreshCw className="w-3 h-3 animate-spin" />
-                <span>Rotates every 30s · Screenshots invalid</span>
+              <div className="inline-flex items-center justify-center gap-2 text-xs font-semibold text-amber-700 bg-amber-50 px-3.5 py-1.5 rounded-full">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Refreshes every 30s · Anti-screenshot</span>
               </div>
             )}
 
@@ -330,16 +338,16 @@ export default function MyTicketsPage() {
               onClick={() =>
                 handleCopyPayload(dynamicQrData ? dynamicQrData.qrPayload : activeQrTicket.ticketCode)
               }
-              className="w-full flex items-center justify-between gap-2 font-mono text-[11px] text-[#9E9EA8] hover:text-[#F4F4F0] bg-[#0B0B0C] px-3 py-2.5 rounded border border-[#242429] cursor-pointer"
-              title="Copy payload for Gate Scanner test"
+              className="w-full flex items-center justify-between gap-2 font-mono text-[11px] text-[#4B5563] hover:text-[#111827] bg-[#F7F8FA] px-3.5 py-2.5 rounded-xl border border-[#E6E8EC] cursor-pointer"
+              title="Copy token for Door Scanner"
             >
               <span className="truncate">
                 {dynamicQrData ? dynamicQrData.qrPayload : activeQrTicket.ticketCode}
               </span>
               {copiedToken ? (
-                <Check className="w-3.5 h-3.5 text-[#D4FF00] shrink-0" />
+                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               ) : (
-                <Copy className="w-3.5 h-3.5 text-[#666670] shrink-0" />
+                <Copy className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0" />
               )}
             </button>
           </div>
@@ -348,30 +356,32 @@ export default function MyTicketsPage() {
 
       {/* P2P Pass Transfer Modal */}
       {transferTicketTarget && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-7 max-w-md w-full relative shadow-2xl space-y-5 text-left">
+        <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#E6E8EC] rounded-3xl p-6 sm:p-8 max-w-md w-full relative shadow-2xl space-y-5 text-left">
             <button
               onClick={() => setTransferTicketTarget(null)}
-              className="absolute top-4 right-4 text-[#666670] hover:text-[#F4F4F0] p-1 rounded hover:bg-[#1E1E22] cursor-pointer"
+              className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#111827] p-1.5 rounded-full hover:bg-[#F1F3F7] cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             <div className="space-y-1">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-[#D4FF00] block">
-                Pass Transfer
+              <span className="inline-block text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3 py-1 rounded-full">
+                Send Ticket
               </span>
-              <h3 className="font-display text-2xl font-bold text-[#F4F4F0]">Send Pass to Friend</h3>
-              <p className="text-xs text-[#9E9EA8]">
-                Transfer Row {transferTicketTarget.rowLabel} · Seat #{transferTicketTarget.seatNumber} for{' '}
-                <span className="text-[#F4F4F0] font-medium">{transferTicketTarget.eventName}</span>.
+              <h3 className="font-display text-2xl font-extrabold text-[#111827] pt-1">
+                Transfer to a Friend
+              </h3>
+              <p className="text-xs sm:text-sm text-[#6B7280]">
+                Send Row {transferTicketTarget.rowLabel} · Seat #{transferTicketTarget.seatNumber} for{' '}
+                <span className="text-[#111827] font-semibold">{transferTicketTarget.eventName}</span>.
               </p>
             </div>
 
             <form onSubmit={handleTransferSubmit} className="space-y-4">
               <div>
-                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
-                  Recipient Account Email
+                <label className="block text-xs font-bold text-[#374151] mb-2">
+                  Friend&apos;s Account Email
                 </label>
                 <input
                   type="email"
@@ -379,21 +389,21 @@ export default function MyTicketsPage() {
                   value={recipientEmail}
                   onChange={(e) => setRecipientEmail(e.target.value)}
                   placeholder="friend@example.com"
-                  className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] rounded-md px-3.5 py-3 text-[#F4F4F0] text-sm outline-none transition-colors"
+                  className="w-full bg-[#F7F8FA] border border-[#E6E8EC] focus:border-[#E11D48] focus:bg-white rounded-2xl px-4 py-3 text-[#111827] text-sm outline-none transition-all"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={transferring || !recipientEmail.trim()}
-                className="w-full py-3 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 text-sm"
+                className="w-full py-3.5 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold rounded-full shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 text-sm"
               >
                 {transferring ? (
-                  <span>Transferring...</span>
+                  <span>Sending Ticket...</span>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Transfer Ownership</span>
+                    <span>Confirm Transfer</span>
                   </>
                 )}
               </button>

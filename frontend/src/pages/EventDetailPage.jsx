@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import SeatMap from '../components/SeatMap';
 import WaitingRoomModal from '../components/WaitingRoomModal';
 import { formatPrice } from '../utils/formatPrice';
-import { Calendar, MapPin, AlertCircle, Users, ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { Calendar, MapPin, AlertCircle, Users, ArrowLeft, ArrowRight, X, ShieldCheck } from 'lucide-react';
 
 const FALLBACK_POSTER =
   'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=80';
@@ -69,7 +69,7 @@ export default function EventDetailPage() {
     }
 
     if (selectedSeatIds.length === 0) {
-      setErrorMessage('Select at least one seat on the floorplan.');
+      setErrorMessage('Please choose at least one seat on the stadium map.');
       return;
     }
 
@@ -106,166 +106,165 @@ export default function EventDetailPage() {
 
   if (loading || !event) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-20 text-center">
-        <div className="w-7 h-7 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-3" />
-        <p className="font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">Loading event floorplan...</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-24 text-center">
+        <div className="w-8 h-8 border-3 border-[#E6E8EC] border-t-[#E11D48] rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm font-medium text-[#6B7280]">Loading event &amp; stadium seating...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10 space-y-10">
-      {/* Breadcrumb */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10 space-y-8">
+      {/* Top Navigation Row */}
       <div className="flex items-center justify-between">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-[#9E9EA8] hover:text-[#D4FF00] transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-[#4B5563] hover:text-[#E11D48] transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>All Events</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Events</span>
         </Link>
 
         <button
           onClick={() => setShowQueueModal(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#121214] hover:bg-[#17171A] border border-[#242429] text-[11px] font-mono text-[#9E9EA8] hover:text-[#D4FF00] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-[#FFF1F2] border border-[#E6E8EC] hover:border-rose-200 text-xs font-semibold text-[#4B5563] hover:text-[#E11D48] shadow-2xs transition-all cursor-pointer"
         >
-          <Users className="w-3.5 h-3.5 text-[#D4FF00]" />
-          <span>{queueToken ? 'Queue Verified' : 'Preview Virtual Queue'}</span>
+          <Users className="w-3.5 h-3.5 text-[#E11D48]" />
+          <span>{queueToken ? 'Queue Access Verified' : 'Preview Virtual Waiting Room'}</span>
         </button>
       </div>
 
-      {/* Event Editorial Header */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-b border-[#242429] pb-10">
-        <div className="lg:col-span-4 rounded-lg overflow-hidden border border-[#242429] bg-[#121214] aspect-[16/10] lg:aspect-[4/3]">
-          <img
-            src={event.posterUrl || FALLBACK_POSTER}
-            alt={event.name}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = FALLBACK_POSTER;
-            }}
-            className="w-full h-full object-cover"
-          />
-        </div>
+      {/* Bright Event Overview Card */}
+      <section className="market-card rounded-3xl p-5 sm:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+          <div className="lg:col-span-5 rounded-2xl overflow-hidden bg-[#F1F3F7] aspect-[16/10]">
+            <img
+              src={event.posterUrl || FALLBACK_POSTER}
+              alt={event.name}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = FALLBACK_POSTER;
+              }}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-        <div className="lg:col-span-8 flex flex-col justify-between gap-6">
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2.5 font-mono text-[11px] uppercase tracking-wider">
-              <span className="bg-[#17171A] border border-[#242429] text-[#D4FF00] px-2.5 py-1 rounded-sm font-semibold">
+          <div className="lg:col-span-7 space-y-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-[#FFF1F2] text-[#E11D48] px-3.5 py-1 rounded-full text-xs font-bold">
                 {event.category}
               </span>
-              <span className="text-[#666670]">Event #{event.id}</span>
+              <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Verified Official Tickets
+              </span>
             </div>
 
-            <h1 className="font-display text-3xl sm:text-5xl font-bold text-[#F4F4F0] leading-[1.05] tracking-tight">
+            <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-[#111827] leading-tight">
               {event.name}
             </h1>
 
-            <p className="text-[#9E9EA8] text-sm sm:text-base leading-relaxed max-w-3xl">
+            <p className="text-[#4B5563] text-sm sm:text-base leading-relaxed">
               {event.description}
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-5 border-t border-[#242429]">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded bg-[#121214] border border-[#242429] text-[#D4FF00]">
-                <Calendar className="w-4 h-4 shrink-0" />
-              </div>
-              <div>
-                <p className="font-mono text-[10px] font-semibold text-[#666670] uppercase tracking-wider">
-                  Date &amp; Showtime
-                </p>
-                <p className="text-sm font-semibold text-[#F4F4F0] mt-0.5">
-                  {new Date(event.startTime).toLocaleString('en-US', {
-                    weekday: 'long',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })}
-                </p>
-              </div>
-            </div>
-
-            {event.venue && (
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded bg-[#121214] border border-[#242429] text-[#D4FF00]">
-                  <MapPin className="w-4 h-4 shrink-0" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="flex items-center gap-3 bg-[#F7F8FA] border border-[#E6E8EC] p-3.5 rounded-2xl">
+                <div className="w-10 h-10 rounded-xl bg-[#FFF1F2] text-[#E11D48] flex items-center justify-center shrink-0">
+                  <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-mono text-[10px] font-semibold text-[#666670] uppercase tracking-wider">
-                    Venue
-                  </p>
-                  <p className="text-sm font-semibold text-[#F4F4F0] mt-0.5">
-                    {event.venue.name}, {event.venue.city}
+                  <p className="text-xs font-medium text-[#6B7280]">Date &amp; Time</p>
+                  <p className="text-sm font-bold text-[#111827]">
+                    {new Date(event.startTime).toLocaleString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
                   </p>
                 </div>
               </div>
-            )}
+
+              {event.venue && (
+                <div className="flex items-center gap-3 bg-[#F7F8FA] border border-[#E6E8EC] p-3.5 rounded-2xl">
+                  <div className="w-10 h-10 rounded-xl bg-[#FFF1F2] text-[#E11D48] flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-[#6B7280]">Venue</p>
+                    <p className="text-sm font-bold text-[#111827] truncate">
+                      {event.venue.name}, {event.venue.city}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Floorplan & Sticky Order Summary */}
+      {/* Curved Stadium Map & Sticky Checkout Card */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-8 space-y-4">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-display text-xl sm:text-2xl font-bold text-[#F4F4F0]">
-              Select Seats
+          <div>
+            <h2 className="font-display text-2xl font-extrabold text-[#111827]">
+              Choose Your Seats
             </h2>
-            <span className="font-mono text-[11px] text-[#666670]">
-              Click available seats to add to order
-            </span>
+            <p className="text-sm text-[#6B7280]">
+              Seats curve around the main stage so you can compare sections and prices easily.
+            </p>
           </div>
           <SeatMap seatMap={seatMap} selectedSeatIds={selectedSeatIds} onToggleSeat={handleToggleSeat} />
         </div>
 
         {/* Sticky Order Summary */}
         <aside className="lg:col-span-4 lg:sticky lg:top-24">
-          <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-6">
-            <div className="flex items-center justify-between border-b border-[#242429] pb-4">
-              <h3 className="font-display text-base font-bold text-[#F4F4F0]">Your Selection</h3>
-              <span className="font-mono text-xs text-[#9E9EA8]">
-                {selectedSeatsInfo.length} {selectedSeatsInfo.length === 1 ? 'ticket' : 'tickets'}
+          <div className="market-card rounded-3xl p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-[#F1F3F7] pb-4">
+              <h3 className="font-display text-lg font-extrabold text-[#111827]">Your Tickets</h3>
+              <span className="text-xs font-bold bg-[#F1F3F7] text-[#4B5563] px-3 py-1 rounded-full">
+                {selectedSeatsInfo.length} selected
               </span>
             </div>
 
             {errorMessage && (
-              <div className="bg-red-500/10 border border-red-500/40 p-3 rounded-md text-red-300 text-xs flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-400" />
+              <div className="bg-red-50 border border-red-200 p-3.5 rounded-2xl text-red-700 text-xs font-medium flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
             {selectedSeatsInfo.length === 0 ? (
-              <div className="py-8 text-center border border-dashed border-[#242429] rounded-md px-4">
-                <p className="text-xs text-[#9E9EA8]">No seats selected.</p>
-                <p className="font-mono text-[11px] text-[#666670] mt-1">
-                  Pick any open seat on the venue floorplan.
+              <div className="py-8 text-center bg-[#F7F8FA] border border-dashed border-[#D1D5DB] rounded-2xl px-4">
+                <p className="text-sm font-semibold text-[#374151]">No seats selected yet</p>
+                <p className="text-xs text-[#6B7280] mt-1">
+                  Click any open circle on the seating map to add tickets.
                 </p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
                 {selectedSeatsInfo.map((seat) => (
                   <div
                     key={seat.id}
-                    className="flex items-center justify-between bg-[#17171A] border border-[#242429] px-3 py-2.5 rounded-md text-xs"
+                    className="flex items-center justify-between bg-[#F7F8FA] border border-[#E6E8EC] px-3.5 py-2.5 rounded-2xl text-xs"
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono font-bold text-[#0B0B0C] bg-[#D4FF00] px-1.5 py-0.5 rounded-sm text-[11px]">
+                      <span className="font-bold text-white bg-[#E11D48] px-2.5 py-1 rounded-full">
                         {seat.rowLabel}-{seat.seatNumber}
                       </span>
-                      <span className="text-[#9E9EA8] font-medium">{seat.categoryName}</span>
+                      <span className="text-[#374151] font-semibold">{seat.categoryName}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-semibold text-[#F4F4F0]">
+                      <span className="font-bold text-[#111827]">
                         {formatPrice(seat.price)}
                       </span>
                       <button
                         onClick={() => handleToggleSeat(seat.id)}
-                        className="text-[#666670] hover:text-[#F4F4F0] p-0.5 cursor-pointer"
+                        className="text-[#9CA3AF] hover:text-[#E11D48] p-1 rounded-full hover:bg-white cursor-pointer"
                         title="Remove seat"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -276,12 +275,10 @@ export default function EventDetailPage() {
               </div>
             )}
 
-            <div className="border-t border-[#242429] pt-4 space-y-4">
+            <div className="border-t border-[#F1F3F7] pt-4 space-y-4">
               <div className="flex items-baseline justify-between">
-                <span className="font-mono text-xs uppercase tracking-wider text-[#9E9EA8]">
-                  Total
-                </span>
-                <span className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] tabular-nums">
+                <span className="text-sm font-semibold text-[#6B7280]">Subtotal</span>
+                <span className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827]">
                   {formatPrice(totalAmount)}
                 </span>
               </div>
@@ -289,18 +286,18 @@ export default function EventDetailPage() {
               <button
                 onClick={handleInitiateBooking}
                 disabled={selectedSeatsInfo.length === 0 || bookingLoading}
-                className={`w-full py-3.5 px-4 rounded-md font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
+                className={`w-full py-4 px-5 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all ${
                   selectedSeatsInfo.length === 0 || bookingLoading
-                    ? 'bg-[#17171A] text-[#666670] border border-[#242429] cursor-not-allowed'
-                    : 'bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] cursor-pointer'
+                    ? 'bg-[#F1F3F7] text-[#9CA3AF] cursor-not-allowed'
+                    : 'bg-[#E11D48] hover:bg-[#BE123C] text-white shadow-md shadow-rose-500/25 cursor-pointer'
                 }`}
               >
-                <span>{bookingLoading ? 'Locking Seats...' : 'Continue to Checkout'}</span>
+                <span>{bookingLoading ? 'Reserving Your Seats...' : 'Continue to Checkout'}</span>
                 {!bookingLoading && <ArrowRight className="w-4 h-4" />}
               </button>
 
-              <p className="font-mono text-[11px] text-[#666670] text-center">
-                Seats are held exclusively for 10 minutes during checkout.
+              <p className="text-xs text-[#6B7280] text-center">
+                We&apos;ll hold your seats for 10 minutes while you complete payment.
               </p>
             </div>
           </div>

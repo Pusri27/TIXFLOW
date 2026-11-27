@@ -3,10 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { eventApi, adminApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Calendar, MapPin, Search, ArrowUpRight, Edit, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Search, ArrowRight, Music, Film, Trophy, Theater, Compass, Edit, Trash2, Clock } from 'lucide-react';
 
 const FALLBACK_POSTER =
   'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=80';
+
+const CATEGORY_LABELS = {
+  CONCERT: 'Concerts',
+  MOVIE: 'Cinema',
+  SPORTS: 'Sports',
+  THEATER: 'Theater',
+};
 
 export default function EventListPage() {
   const { user } = useAuth();
@@ -62,11 +69,11 @@ export default function EventListPage() {
   };
 
   const categories = [
-    { id: '', name: 'All Events' },
-    { id: 'CONCERT', name: 'Music & Concerts' },
-    { id: 'MOVIE', name: 'Film & Screenings' },
-    { id: 'SPORTS', name: 'Sports' },
-    { id: 'THEATER', name: 'Stage & Arts' },
+    { id: '', name: 'All Events', icon: Compass },
+    { id: 'CONCERT', name: 'Concerts & Music', icon: Music },
+    { id: 'SPORTS', name: 'Sports & Stadiums', icon: Trophy },
+    { id: 'MOVIE', name: 'Cinema & Premieres', icon: Film },
+    { id: 'THEATER', name: 'Theater & Arts', icon: Theater },
   ];
 
   const filteredEvents = events.filter(
@@ -80,98 +87,81 @@ export default function EventListPage() {
   const featuredEvent = !selectedCategory && !searchQuery && events.length > 0 ? events[0] : null;
 
   const formatDateBadge = (dateString) => {
-    if (!dateString) return { month: 'TBA', day: '--', weekday: 'DATE' };
+    if (!dateString) return { month: 'TBA', day: '--' };
     const d = new Date(dateString);
     return {
-      month: d.toLocaleString('en-US', { month: 'short' }).toUpperCase(),
-      day: String(d.getDate()).padStart(2, '0'),
-      weekday: d.toLocaleString('en-US', { weekday: 'short' }).toUpperCase(),
+      month: d.toLocaleString('en-US', { month: 'short' }),
+      day: d.getDate(),
     };
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-14">
-      {/* Asymmetric Editorial Featured Showcase */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10 space-y-12">
+      {/* Welcoming Consumer Spotlight Hero */}
       {featuredEvent && (
-        <section className="border border-[#242429] bg-[#121214] rounded-lg overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12">
-            {/* Left Editorial Column */}
-            <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between gap-8 order-2 lg:order-1">
-              <div className="space-y-5">
-                <div className="flex flex-wrap items-center gap-3 font-mono text-[11px] uppercase tracking-wider">
-                  <span className="inline-flex items-center gap-2 bg-[#D4FF00] text-[#0B0B0C] font-bold px-2.5 py-1 rounded-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0B0B0C]" />
-                    Featured Release
-                  </span>
-                  <span className="text-[#9E9EA8] border border-[#242429] px-2.5 py-1 rounded-sm">
-                    {featuredEvent.category}
-                  </span>
-                </div>
-
-                <h1 className="font-display text-3xl sm:text-5xl font-bold text-[#F4F4F0] leading-[1.04] tracking-tight">
-                  {featuredEvent.name}
-                </h1>
-
-                <p className="text-[#9E9EA8] text-sm sm:text-base leading-relaxed line-clamp-3 max-w-2xl">
-                  {featuredEvent.description}
-                </p>
+        <section className="market-card rounded-3xl p-4 sm:p-6 lg:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+            {/* Left Copy */}
+            <div className="lg:col-span-6 space-y-5 order-2 lg:order-1 px-2 sm:px-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 bg-[#FFF1F2] text-[#E11D48] text-xs font-bold px-3.5 py-1.5 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
+                  Featured Experience
+                </span>
+                <span className="bg-[#F1F3F7] text-[#4B5563] text-xs font-semibold px-3 py-1.5 rounded-full">
+                  {CATEGORY_LABELS[featuredEvent.category] || featuredEvent.category}
+                </span>
               </div>
 
-              <div className="space-y-6 pt-4 border-t border-[#242429]">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="flex items-start gap-2.5">
-                    <Calendar className="w-4 h-4 text-[#D4FF00] shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-[#666670] block">
-                        Date &amp; Doors
-                      </span>
-                      <span className="text-[#F4F4F0] font-medium">
-                        {new Date(featuredEvent.startTime).toLocaleString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    </div>
-                  </div>
+              <h1 className="font-display text-3xl sm:text-5xl font-extrabold text-[#111827] leading-[1.08]">
+                {featuredEvent.name}
+              </h1>
 
-                  {featuredEvent.venue && (
-                    <div className="flex items-start gap-2.5">
-                      <MapPin className="w-4 h-4 text-[#D4FF00] shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-mono text-[10px] uppercase tracking-wider text-[#666670] block">
-                          Venue
-                        </span>
-                        <span className="text-[#F4F4F0] font-medium">
-                          {featuredEvent.venue.name}, {featuredEvent.venue.city}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <p className="text-[#4B5563] text-sm sm:text-base leading-relaxed line-clamp-3">
+                {featuredEvent.description}
+              </p>
 
-                <div className="flex items-center gap-4">
-                  <Link
-                    to={`/events/${featuredEvent.id}`}
-                    className="inline-flex items-center gap-2 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold px-6 py-3.5 rounded-md text-sm transition-colors group"
-                  >
-                    <span>Get Tickets</span>
-                    <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-                  <span className="font-mono text-[11px] text-[#666670] hidden sm:inline">
-                    Instant seat selection
+              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs sm:text-sm text-[#374151]">
+                <div className="inline-flex items-center gap-2 bg-[#F7F8FA] border border-[#E6E8EC] px-3.5 py-2 rounded-full font-medium">
+                  <Calendar className="w-4 h-4 text-[#E11D48] shrink-0" />
+                  <span>
+                    {new Date(featuredEvent.startTime).toLocaleString('en-US', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </span>
                 </div>
+
+                {featuredEvent.venue && (
+                  <div className="inline-flex items-center gap-2 bg-[#F7F8FA] border border-[#E6E8EC] px-3.5 py-2 rounded-full font-medium">
+                    <MapPin className="w-4 h-4 text-[#E11D48] shrink-0" />
+                    <span>
+                      {featuredEvent.venue.name}, {featuredEvent.venue.city}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2 flex flex-wrap items-center gap-4">
+                <Link
+                  to={`/events/${featuredEvent.id}`}
+                  className="inline-flex items-center gap-2 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold px-7 py-3.5 rounded-full text-sm shadow-md shadow-rose-500/20 transition-all group"
+                >
+                  <span>Select Seats</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <span className="text-xs font-medium text-[#6B7280]">
+                  Interactive stadium map · Instant mobile pass
+                </span>
               </div>
             </div>
 
-            {/* Right Unblurred Artwork Column */}
+            {/* Right Framed Artwork */}
             <div
               onClick={() => navigate(`/events/${featuredEvent.id}`)}
-              className="lg:col-span-5 relative aspect-[16/10] lg:aspect-auto lg:min-h-[420px] bg-[#0B0B0C] overflow-hidden cursor-pointer group order-1 lg:order-2 border-b lg:border-b-0 lg:border-l border-[#242429]"
+              className="lg:col-span-6 relative aspect-[16/10] rounded-2xl overflow-hidden bg-[#F1F3F7] cursor-pointer group order-1 lg:order-2 shadow-sm"
             >
               <img
                 src={featuredEvent.posterUrl || FALLBACK_POSTER}
@@ -180,88 +170,84 @@ export default function EventListPage() {
                   e.target.onerror = null;
                   e.target.src = FALLBACK_POSTER;
                 }}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0C]/60 via-transparent to-transparent lg:hidden" />
             </div>
           </div>
         </section>
       )}
 
-      {/* Program Directory Header & Filter Bar */}
+      {/* Search & Category Pills */}
       <section className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] tracking-tight">
-                Upcoming Lineup
-              </h2>
-              {!loading && (
-                <span className="font-mono text-xs text-[#D4FF00] bg-[#17171A] border border-[#242429] px-2 py-0.5 rounded">
-                  {String(filteredEvents.length).padStart(2, '0')}
-                </span>
-              )}
-            </div>
-            <p className="text-[#9E9EA8] text-xs sm:text-sm mt-1">
-              Live tours, arena fixtures, film premieres, and stage productions.
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827]">
+              Upcoming Events
+            </h2>
+            <p className="text-[#6B7280] text-sm mt-1">
+              Book verified seats for live music tours, international matches, and theater shows.
             </p>
           </div>
 
-          {/* Search Input */}
-          <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {/* Rounded Pill Search */}
+          <div className="relative w-full md:w-88">
+            <Search className="w-4 h-4 text-[#9CA3AF] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search artist, event, city..."
-              className="w-full bg-[#121214] border border-[#242429] focus:border-[#D4FF00] rounded-md pl-10 pr-4 py-2.5 text-xs text-[#F4F4F0] placeholder-[#666670] outline-none transition-colors"
+              placeholder="Search artist, match, or city..."
+              className="w-full bg-white border border-[#E6E8EC] focus:border-[#E11D48] focus:ring-4 focus:ring-rose-500/10 rounded-full pl-11 pr-4 py-3 text-sm text-[#111827] placeholder-[#9CA3AF] outline-none transition-all shadow-2xs"
             />
           </div>
         </div>
 
-        {/* Clean Editorial Category Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none border-b border-[#242429]">
+        {/* Tactile Rounded Category Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
           {categories.map((cat) => {
+            const Icon = cat.icon;
             const isActive = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors cursor-pointer -mb-px ${
+                className={`inline-flex items-center gap-2 px-4.5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
-                    ? 'border-[#D4FF00] text-[#D4FF00]'
-                    : 'border-transparent text-[#9E9EA8] hover:text-[#F4F4F0]'
+                    ? 'bg-[#111827] text-white shadow-sm'
+                    : 'bg-white border border-[#E6E8EC] text-[#4B5563] hover:text-[#111827] hover:border-[#D1D5DB]'
                 }`}
               >
-                {cat.name}
+                <Icon className={`w-4 h-4 ${isActive ? 'text-rose-400' : 'text-[#6B7280]'}`} />
+                <span>{cat.name}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Event Grid */}
+        {/* Event Marketplace Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="bg-[#121214] border border-[#242429] rounded-lg overflow-hidden animate-pulse"
+                className="bg-white border border-[#E6E8EC] rounded-2xl overflow-hidden p-3 space-y-3 animate-pulse"
               >
-                <div className="aspect-[16/10] bg-[#17171A]" />
-                <div className="p-5 space-y-3">
-                  <div className="w-24 h-3 bg-[#1E1E22] rounded" />
-                  <div className="w-3/4 h-5 bg-[#1E1E22] rounded" />
-                  <div className="w-1/2 h-3 bg-[#17171A] rounded" />
+                <div className="aspect-[16/10] bg-[#F1F3F7] rounded-xl" />
+                <div className="px-2 pb-2 space-y-2.5">
+                  <div className="w-24 h-3.5 bg-[#F1F3F7] rounded-full" />
+                  <div className="w-3/4 h-5 bg-[#E6E8EC] rounded-full" />
+                  <div className="w-1/2 h-3.5 bg-[#F1F3F7] rounded-full" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="border border-[#242429] bg-[#121214] rounded-lg py-20 px-6 text-center">
-            <p className="font-display text-lg font-bold text-[#F4F4F0]">No matching events</p>
-            <p className="text-xs text-[#9E9EA8] mt-1">
-              Try clearing your search query or switching to All Events.
+          <div className="market-card rounded-3xl py-20 px-6 text-center">
+            <p className="font-display text-xl font-bold text-[#111827]">
+              No events match your search
+            </p>
+            <p className="text-sm text-[#6B7280] mt-1">
+              Try a different keyword or switch back to All Events.
             </p>
             {(searchQuery || selectedCategory) && (
               <button
@@ -269,9 +255,9 @@ export default function EventListPage() {
                   setSearchQuery('');
                   setSelectedCategory('');
                 }}
-                className="mt-5 px-4 py-2 rounded-md bg-[#17171A] hover:bg-[#1E1E22] border border-[#242429] text-xs font-semibold text-[#D4FF00] cursor-pointer transition-colors"
+                className="mt-5 px-5 py-2.5 rounded-full bg-[#FFF1F2] hover:bg-rose-100 text-sm font-bold text-[#E11D48] cursor-pointer transition-colors"
               >
-                Reset Filters
+                Clear Filters
               </button>
             )}
           </div>
@@ -283,24 +269,24 @@ export default function EventListPage() {
                 <article
                   key={event.id}
                   onClick={() => navigate(`/events/${event.id}`)}
-                  className="group bg-[#121214] border border-[#242429] hover:border-[#D4FF00]/60 rounded-lg overflow-hidden transition-colors flex flex-col cursor-pointer relative"
+                  className="group market-card market-card-hover rounded-2xl overflow-hidden flex flex-col cursor-pointer relative"
                 >
-                  {/* Admin Quick Controls */}
+                  {/* Host Quick Actions */}
                   {isAdmin && (
-                    <div className="absolute top-3 right-3 z-20 flex items-center gap-1 bg-[#0B0B0C]/90 border border-[#242429] p-1 rounded-md">
+                    <div className="absolute top-3 right-3 z-20 flex items-center gap-1 bg-white/95 backdrop-blur-md border border-[#E6E8EC] p-1 rounded-full shadow-md">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/admin/events/edit/${event.id}`);
                         }}
-                        className="p-1.5 text-[#F4F4F0] hover:text-[#D4FF00] hover:bg-[#17171A] rounded transition-colors cursor-pointer"
+                        className="p-2 text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F3F7] rounded-full transition-colors cursor-pointer"
                         title="Edit Event"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={(e) => handleDeleteEvent(e, event.id, event.name)}
-                        className="p-1.5 text-[#9E9EA8] hover:text-red-400 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                        className="p-2 text-[#6B7280] hover:text-[#E11D48] hover:bg-[#FFF1F2] rounded-full transition-colors cursor-pointer"
                         title="Delete Event"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -308,8 +294,8 @@ export default function EventListPage() {
                     </div>
                   )}
 
-                  {/* Crisp Poster Frame */}
-                  <div className="relative aspect-[16/10] overflow-hidden bg-[#0B0B0C] border-b border-[#242429]">
+                  {/* Poster Frame */}
+                  <div className="relative aspect-[16/10] overflow-hidden bg-[#F1F3F7]">
                     <img
                       src={event.posterUrl || FALLBACK_POSTER}
                       alt={event.name}
@@ -317,23 +303,50 @@ export default function EventListPage() {
                         e.target.onerror = null;
                         e.target.src = FALLBACK_POSTER;
                       }}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
 
-                    {/* Architectural Date Stamp */}
-                    <div className="absolute top-3 left-3 bg-[#0B0B0C]/95 border border-[#242429] px-2.5 py-1.5 rounded text-left font-mono">
-                      <span className="block text-[10px] font-bold text-[#D4FF00] leading-none">
-                        {dateInfo.weekday} · {dateInfo.month} {dateInfo.day}
+                    {/* Clean Floating White Date Badge */}
+                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md rounded-xl px-3 py-1.5 text-center shadow-sm border border-black/5">
+                      <span className="block text-[10px] font-bold uppercase tracking-wider text-[#E11D48] leading-none">
+                        {dateInfo.month}
+                      </span>
+                      <span className="block font-display text-lg font-extrabold text-[#111827] leading-tight">
+                        {dateInfo.day}
                       </span>
                     </div>
+
+                    {/* Category Pill */}
+                    {!isAdmin && (
+                      <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-[#111827] text-xs font-bold px-3 py-1 rounded-full shadow-xs">
+                        {CATEGORY_LABELS[event.category] || event.category}
+                      </span>
+                    )}
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-5 flex-1 flex flex-col justify-between gap-5">
+                  <div className="p-5 flex-1 flex flex-col justify-between gap-4">
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-wider text-[#666670]">
-                        <span>{event.category}</span>
-                        <span>
+                      <h3 className="font-display text-lg font-bold text-[#111827] group-hover:text-[#E11D48] transition-colors line-clamp-1">
+                        {event.name}
+                      </h3>
+
+                      <p className="text-[#6B7280] text-xs sm:text-sm line-clamp-2 leading-relaxed">
+                        {event.description}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2.5 pt-3.5 border-t border-[#F1F3F7]">
+                      <div className="flex items-center justify-between text-xs text-[#4B5563] font-medium">
+                        <span className="inline-flex items-center gap-1.5 truncate pr-2">
+                          <MapPin className="w-3.5 h-3.5 text-[#E11D48] shrink-0" />
+                          <span className="truncate">
+                            {event.venue ? `${event.venue.name}, ${event.venue.city}` : 'Venue TBA'}
+                          </span>
+                        </span>
+
+                        <span className="inline-flex items-center gap-1 text-[#6B7280] shrink-0">
+                          <Clock className="w-3.5 h-3.5" />
                           {new Date(event.startTime).toLocaleString('en-US', {
                             hour: 'numeric',
                             minute: '2-digit',
@@ -341,27 +354,13 @@ export default function EventListPage() {
                         </span>
                       </div>
 
-                      <h3 className="font-display text-lg font-bold text-[#F4F4F0] group-hover:text-[#D4FF00] transition-colors line-clamp-1">
-                        {event.name}
-                      </h3>
-
-                      <p className="text-[#9E9EA8] text-xs line-clamp-2 leading-relaxed">
-                        {event.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-3.5 border-t border-[#242429] flex items-center justify-between gap-3 text-xs">
-                      <div className="flex items-center gap-1.5 text-[#9E9EA8] min-w-0">
-                        <MapPin className="w-3.5 h-3.5 text-[#666670] shrink-0" />
-                        <span className="truncate">
-                          {event.venue ? `${event.venue.name}, ${event.venue.city}` : 'TBA'}
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-xs font-medium text-[#6B7280]">Available now</span>
+                        <span className="text-xs font-bold text-[#E11D48] inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                          Find Tickets
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </span>
                       </div>
-
-                      <span className="font-mono text-[11px] font-semibold text-[#F4F4F0] group-hover:text-[#D4FF00] shrink-0 inline-flex items-center gap-1 transition-colors">
-                        Tickets
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </span>
                     </div>
                   </div>
                 </article>

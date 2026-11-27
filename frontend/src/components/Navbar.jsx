@@ -25,88 +25,91 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0B0B0C]/95 backdrop-blur-md border-b border-[#242429]">
+    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-[#E6E8EC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
-        {/* Brand Wordmark */}
+        {/* Friendly Consumer Brand Mark */}
         <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-          <span className="w-7 h-7 rounded bg-[#D4FF00] text-[#0B0B0C] flex items-center justify-center font-mono font-bold text-sm transition-transform duration-200 group-hover:scale-105">
-            /
+          <span className="w-9 h-9 rounded-xl bg-[#E11D48] text-white flex items-center justify-center shadow-sm shadow-rose-500/20 transition-transform duration-200 group-hover:scale-105">
+            <Ticket className="w-4.5 h-4.5" />
           </span>
-          <span className="font-display text-lg font-bold tracking-tight text-[#F4F4F0] uppercase">
-            TIXFLOW
+          <span className="font-display text-xl font-extrabold tracking-tight text-[#111827]">
+            tixflow
           </span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden sm:flex items-center gap-1.5">
+        {/* Desktop Pill Navigation */}
+        <nav className="hidden sm:flex items-center gap-2">
           <Link
             to="/"
-            className={`px-3.5 py-2 rounded-md text-xs font-semibold tracking-wide transition-colors ${
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
               isActive('/')
-                ? 'text-[#D4FF00] bg-[#17171A]'
-                : 'text-[#9E9EA8] hover:text-[#F4F4F0] hover:bg-[#121214]'
+                ? 'bg-[#FFF1F2] text-[#E11D48]'
+                : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F3F7]'
             }`}
           >
-            Events
+            Explore Events
           </Link>
 
           {user && !isAdmin && (
             <Link
               to="/my-tickets"
-              className={`px-3.5 py-2 rounded-md text-xs font-semibold tracking-wide flex items-center gap-1.5 transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 transition-all ${
                 isActive('/my-tickets')
-                  ? 'text-[#D4FF00] bg-[#17171A]'
-                  : 'text-[#9E9EA8] hover:text-[#F4F4F0] hover:bg-[#121214]'
+                  ? 'bg-[#FFF1F2] text-[#E11D48]'
+                  : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#F1F3F7]'
               }`}
             >
-              <Ticket className="w-3.5 h-3.5" />
-              <span>My Passes</span>
+              <Ticket className="w-4 h-4" />
+              <span>My Tickets</span>
             </Link>
           )}
 
-          {/* Organizer / Admin Console Dropdown */}
+          {/* Organizer Dropdown */}
           {isAdmin && (
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setAdminMenuOpen(!adminMenuOpen)}
-                className={`px-3.5 py-2 rounded-md text-xs font-semibold tracking-wide flex items-center gap-1.5 border transition-colors cursor-pointer ${
-                  adminMenuOpen || location.pathname.startsWith('/admin') || location.pathname.startsWith('/organizer') || location.pathname.startsWith('/gatekeeper')
-                    ? 'bg-[#17171A] border-[#D4FF00]/50 text-[#D4FF00]'
-                    : 'bg-[#121214] border-[#242429] text-[#F4F4F0] hover:border-[#34343C]'
+                className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                  adminMenuOpen ||
+                  location.pathname.startsWith('/admin') ||
+                  location.pathname.startsWith('/organizer') ||
+                  location.pathname.startsWith('/gatekeeper')
+                    ? 'bg-[#FFF1F2] border-rose-200 text-[#E11D48]'
+                    : 'bg-[#F7F8FA] border-[#E6E8EC] text-[#111827] hover:bg-[#F1F3F7]'
                 }`}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF00]" />
-                <span>Organizer</span>
-                <ChevronDown className="w-3.5 h-3.5 text-[#9E9EA8]" />
+                <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
+                <span>Organizer Hub</span>
+                <ChevronDown className="w-4 h-4 text-[#6B7280]" />
               </button>
 
               {adminMenuOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-[#121214] border border-[#242429] rounded-lg p-1.5 shadow-2xl z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-[#E6E8EC] rounded-2xl p-2 shadow-xl shadow-slate-900/10 z-50 space-y-0.5">
                   <Link
                     to="/admin/events/create"
                     onClick={() => setAdminMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium text-[#F4F4F0] hover:bg-[#17171A] hover:text-[#D4FF00] transition-colors"
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-[#111827] hover:bg-[#FFF1F2] hover:text-[#E11D48] transition-colors"
                   >
-                    <Plus className="w-3.5 h-3.5 text-[#D4FF00]" />
-                    <span>Publish Event</span>
+                    <Plus className="w-4 h-4 text-[#E11D48]" />
+                    <span>Create New Event</span>
                   </Link>
 
                   <Link
                     to="/organizer/analytics/1"
                     onClick={() => setAdminMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium text-[#F4F4F0] hover:bg-[#17171A] hover:text-[#D4FF00] transition-colors"
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-[#4B5563] hover:bg-[#F7F8FA] hover:text-[#111827] transition-colors"
                   >
-                    <BarChart2 className="w-3.5 h-3.5 text-[#9E9EA8]" />
+                    <BarChart2 className="w-4 h-4 text-[#6B7280]" />
                     <span>Sales &amp; Occupancy</span>
                   </Link>
 
                   <Link
                     to="/gatekeeper/scan"
                     onClick={() => setAdminMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium text-[#F4F4F0] hover:bg-[#17171A] hover:text-[#D4FF00] transition-colors"
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium text-[#4B5563] hover:bg-[#F7F8FA] hover:text-[#111827] transition-colors"
                   >
-                    <ScanLine className="w-3.5 h-3.5 text-[#9E9EA8]" />
-                    <span>Gate Scanner</span>
+                    <ScanLine className="w-4 h-4 text-[#6B7280]" />
+                    <span>Door Ticket Scanner</span>
                   </Link>
                 </div>
               )}
@@ -115,17 +118,17 @@ export default function Navbar() {
 
           {/* Auth Controls */}
           {user ? (
-            <div className="flex items-center gap-2 pl-3 ml-2 border-l border-[#242429]">
-              <div className="flex items-center gap-2 bg-[#121214] border border-[#242429] px-2.5 py-1.5 rounded-md">
-                <div className="w-5 h-5 rounded bg-[#1E1E22] border border-[#34343C] flex items-center justify-center font-mono text-[10px] font-bold text-[#D4FF00]">
+            <div className="flex items-center gap-2 pl-3 ml-1 border-l border-[#E6E8EC]">
+              <div className="flex items-center gap-2 bg-[#F7F8FA] border border-[#E6E8EC] pl-1.5 pr-3 py-1 rounded-full">
+                <div className="w-7 h-7 rounded-full bg-[#E11D48] text-white flex items-center justify-center text-xs font-bold">
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
-                <span className="text-xs font-medium text-[#F4F4F0] hidden md:inline max-w-[120px] truncate">
+                <span className="text-sm font-semibold text-[#111827] hidden md:inline max-w-[120px] truncate">
                   {user.name}
                 </span>
                 {isAdmin && (
-                  <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#0B0B0C] bg-[#D4FF00] px-1.5 py-0.5 rounded-sm">
-                    PRO
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-[#E11D48] bg-[#FFF1F2] px-2 py-0.5 rounded-full">
+                    Host
                   </span>
                 )}
               </div>
@@ -135,7 +138,7 @@ export default function Navbar() {
                   logout();
                   navigate('/');
                 }}
-                className="p-2 rounded-md text-[#9E9EA8] hover:text-[#F4F4F0] hover:bg-[#17171A] transition-colors cursor-pointer"
+                className="p-2 rounded-full text-[#6B7280] hover:text-[#E11D48] hover:bg-[#FFF1F2] transition-colors cursor-pointer"
                 title="Sign Out"
                 aria-label="Sign Out"
               >
@@ -143,27 +146,27 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2 pl-3 ml-2 border-l border-[#242429]">
+            <div className="flex items-center gap-2 pl-3 ml-1 border-l border-[#E6E8EC]">
               <Link
                 to="/login"
-                className="text-xs font-semibold text-[#9E9EA8] hover:text-[#F4F4F0] px-3 py-2 transition-colors"
+                className="text-sm font-semibold text-[#4B5563] hover:text-[#111827] px-3.5 py-2 rounded-full hover:bg-[#F1F3F7] transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
-                className="bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] px-4 py-2 rounded-md text-xs font-bold tracking-tight transition-colors"
+                className="bg-[#E11D48] hover:bg-[#BE123C] text-white px-4.5 py-2 rounded-full text-sm font-bold shadow-sm shadow-rose-500/20 transition-colors"
               >
-                Get Access
+                Sign Up
               </Link>
             </div>
           )}
         </nav>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Hamburger */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="sm:hidden p-2 rounded-md bg-[#121214] border border-[#242429] text-[#F4F4F0]"
+          className="sm:hidden p-2 rounded-full bg-[#F7F8FA] border border-[#E6E8EC] text-[#111827]"
           aria-label="Toggle Menu"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -172,91 +175,91 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="sm:hidden border-t border-[#242429] bg-[#0B0B0C] px-4 py-4 space-y-2">
+        <div className="sm:hidden border-t border-[#E6E8EC] bg-white px-4 py-4 space-y-2 shadow-lg">
           <Link
             to="/"
             onClick={() => setMobileMenuOpen(false)}
-            className={`block px-3 py-2.5 rounded-md text-xs font-semibold ${
-              isActive('/') ? 'bg-[#17171A] text-[#D4FF00]' : 'text-[#F4F4F0]'
+            className={`block px-4 py-2.5 rounded-xl text-sm font-semibold ${
+              isActive('/') ? 'bg-[#FFF1F2] text-[#E11D48]' : 'text-[#111827]'
             }`}
           >
-            Events
+            Explore Events
           </Link>
 
           {user && !isAdmin && (
             <Link
               to="/my-tickets"
               onClick={() => setMobileMenuOpen(false)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-md text-xs font-semibold ${
-                isActive('/my-tickets') ? 'bg-[#17171A] text-[#D4FF00]' : 'text-[#F4F4F0]'
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold ${
+                isActive('/my-tickets') ? 'bg-[#FFF1F2] text-[#E11D48]' : 'text-[#111827]'
               }`}
             >
-              <Ticket className="w-4 h-4 text-[#D4FF00]" />
-              <span>My Passes</span>
+              <Ticket className="w-4 h-4 text-[#E11D48]" />
+              <span>My Tickets</span>
             </Link>
           )}
 
           {isAdmin && (
-            <div className="pt-2 border-t border-[#242429] space-y-1">
-              <span className="font-mono text-[10px] font-semibold text-[#666670] uppercase tracking-widest px-3 block pb-1">
-                Organizer Tools
+            <div className="pt-2 border-t border-[#E6E8EC] space-y-1">
+              <span className="text-xs font-bold text-[#6B7280] px-4 block pb-1">
+                Organizer Hub
               </span>
               <Link
                 to="/admin/events/create"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-md text-xs font-medium text-[#F4F4F0] hover:bg-[#17171A]"
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-[#111827] hover:bg-[#F7F8FA]"
               >
-                <Plus className="w-4 h-4 text-[#D4FF00]" />
-                <span>Publish Event</span>
+                <Plus className="w-4 h-4 text-[#E11D48]" />
+                <span>Create New Event</span>
               </Link>
               <Link
                 to="/organizer/analytics/1"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-md text-xs font-medium text-[#F4F4F0] hover:bg-[#17171A]"
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium text-[#4B5563] hover:bg-[#F7F8FA]"
               >
-                <BarChart2 className="w-4 h-4 text-[#9E9EA8]" />
+                <BarChart2 className="w-4 h-4 text-[#6B7280]" />
                 <span>Sales &amp; Occupancy</span>
               </Link>
               <Link
                 to="/gatekeeper/scan"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-md text-xs font-medium text-[#F4F4F0] hover:bg-[#17171A]"
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-medium text-[#4B5563] hover:bg-[#F7F8FA]"
               >
-                <ScanLine className="w-4 h-4 text-[#9E9EA8]" />
-                <span>Gate Scanner</span>
+                <ScanLine className="w-4 h-4 text-[#6B7280]" />
+                <span>Door Ticket Scanner</span>
               </Link>
             </div>
           )}
 
           {user ? (
-            <div className="pt-2 border-t border-[#242429]">
+            <div className="pt-2 border-t border-[#E6E8EC]">
               <button
                 onClick={() => {
                   logout();
                   setMobileMenuOpen(false);
                   navigate('/');
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-md text-xs font-semibold text-red-400 bg-red-500/10"
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold text-[#E11D48] bg-[#FFF1F2]"
               >
                 <span>Sign Out ({user.name})</span>
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#242429]">
+            <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-[#E6E8EC]">
               <Link
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-center py-2.5 rounded-md text-xs font-semibold bg-[#121214] border border-[#242429] text-[#F4F4F0]"
+                className="text-center py-2.5 rounded-full text-sm font-semibold bg-[#F7F8FA] border border-[#E6E8EC] text-[#111827]"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-center py-2.5 rounded-md text-xs font-bold bg-[#D4FF00] text-[#0B0B0C]"
+                className="text-center py-2.5 rounded-full text-sm font-bold bg-[#E11D48] text-white"
               >
-                Get Access
+                Sign Up
               </Link>
             </div>
           )}
