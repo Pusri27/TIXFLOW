@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { TrendingUp, Users, DollarSign, UserCheck, ArrowLeft, BarChart3, PieChart, Sparkles, Music, ChevronDown } from 'lucide-react';
+import { Users, DollarSign, UserCheck, ArrowLeft, PieChart, ChevronDown } from 'lucide-react';
 import { organizerApi, eventApi } from '../services/api';
 
 export default function OrganizerDashboardPage() {
@@ -24,7 +24,7 @@ export default function OrganizerDashboardPage() {
   const fetchAllEvents = async () => {
     try {
       const res = await eventApi.getAll();
-      const list = res.data || [];
+      const list = Array.isArray(res.data) ? res.data : res.data?.content || [];
       setEventsList(list);
       if (!selectedEventId && list.length > 0) {
         setSelectedEventId(list[0].id);
@@ -47,28 +47,33 @@ export default function OrganizerDashboardPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
-      <div className="flex justify-between items-center mb-8">
-        <Link to="/" className="flex items-center space-x-2 text-zinc-400 hover:text-white transition-colors text-sm font-bold">
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Discovery</span>
+    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-10 sm:py-12 space-y-8">
+      <div className="flex items-center justify-between">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#9E9EA8] hover:text-[#D4FF00] transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>All Events</span>
         </Link>
-        <div className="flex items-center space-x-2 bg-indigo-500/10 border border-indigo-500/30 px-3.5 py-1.5 rounded-full text-xs text-indigo-300 font-bold uppercase tracking-wider">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Organizer Performance Telemetry</span>
-        </div>
+        <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] bg-[#121214] border border-[#242429] px-2.5 py-1 rounded">
+          Organizer Analytics
+        </span>
       </div>
 
-      {/* Concert Selector Header */}
-      <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-6 sm:p-8 mb-8 shadow-2xl space-y-4">
+      {/* Event Switcher Panel */}
+      <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-400 block mb-1">Select Event Telemetry</span>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Concert Revenue &amp; Occupancy Dashboard</h1>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#666670] block">
+              Box Office &amp; Gate Report
+            </span>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] mt-0.5">
+              Sales &amp; Venue Occupancy
+            </h1>
           </div>
 
-          {/* Event Dropdown */}
-          <div className="relative min-w-[280px]">
+          <div className="relative w-full sm:w-72">
             <select
               value={selectedEventId || ''}
               onChange={(e) => {
@@ -76,7 +81,7 @@ export default function OrganizerDashboardPage() {
                 setSelectedEventId(newId);
                 navigate(`/organizer/analytics/${newId}`);
               }}
-              className="w-full bg-[#131522] border border-white/10 focus:border-indigo-500 text-white font-bold text-sm px-4 py-3 rounded-2xl outline-none cursor-pointer appearance-none pr-10"
+              className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] font-medium text-xs px-3.5 py-2.5 rounded-md outline-none cursor-pointer appearance-none pr-9"
             >
               {eventsList.map((evt) => (
                 <option key={evt.id} value={evt.id}>
@@ -84,12 +89,11 @@ export default function OrganizerDashboardPage() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-4 h-4 text-zinc-400 absolute right-4 top-4 pointer-events-none" />
+            <ChevronDown className="w-4 h-4 text-[#666670] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
-        {/* Quick Concert Pill Switcher */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-white/[0.08]">
+        <div className="flex flex-wrap gap-2 pt-4 border-t border-[#242429]">
           {eventsList.map((evt) => (
             <button
               key={evt.id}
@@ -97,89 +101,95 @@ export default function OrganizerDashboardPage() {
                 setSelectedEventId(evt.id);
                 navigate(`/organizer/analytics/${evt.id}`);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
+              className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer truncate max-w-[200px] ${
                 selectedEventId === evt.id
-                  ? 'bg-white text-black shadow-lg'
-                  : 'bg-[#131522] text-zinc-400 hover:text-white border border-white/10'
+                  ? 'bg-[#D4FF00] text-[#0B0B0C]'
+                  : 'bg-[#0B0B0C] text-[#9E9EA8] hover:text-[#F4F4F0] border border-[#242429]'
               }`}
             >
-              <Music className="w-3.5 h-3.5" />
-              <span className="truncate max-w-[150px]">{evt.name}</span>
+              {evt.name}
             </button>
           ))}
         </div>
       </div>
 
       {loading || !analytics ? (
-        <div className="flex items-center justify-center py-24">
-          <div className="text-center">
-            <div className="w-10 h-10 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-zinc-400 font-semibold text-sm">Loading telemetry metrics...</p>
-          </div>
+        <div className="py-20 text-center">
+          <div className="w-7 h-7 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-3" />
+          <p className="font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">Loading metrics...</p>
         </div>
       ) : (
-        <>
-          <h2 className="text-3xl font-black text-white mb-2 tracking-tight">{analytics.eventName}</h2>
-          <p className="text-zinc-400 text-sm mb-8">Real-time revenue metrics, occupancy rates, and gatekeeper check-in statistics.</p>
+        <div className="space-y-6">
+          <div>
+            <h2 className="font-display text-2xl font-bold text-[#F4F4F0]">{analytics.eventName}</h2>
+            <p className="text-xs text-[#9E9EA8] mt-1">
+              Confirmed Stripe box office revenue, seat sell-through, and live gate check-in counts.
+            </p>
+          </div>
 
-          {/* Stat Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Gross Revenue</span>
-                <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-2xl border border-emerald-500/20">
-                  <DollarSign className="w-5 h-5" />
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] font-semibold text-[#9E9EA8] uppercase tracking-wider">
+                  Gross Revenue
+                </span>
+                <DollarSign className="w-4 h-4 text-[#D4FF00]" />
               </div>
-              <p className="text-3xl font-black text-white tracking-tight">
+              <p className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
                 ${(analytics.totalRevenue || 0).toLocaleString('en-US')}
               </p>
-              <span className="text-xs text-emerald-400 mt-2 font-bold flex items-center space-x-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Live Confirmed Sales</span>
+              <span className="font-mono text-[11px] text-[#D4FF00] block">Confirmed orders</span>
+            </div>
+
+            <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] font-semibold text-[#9E9EA8] uppercase tracking-wider">
+                  Occupancy
+                </span>
+                <PieChart className="w-4 h-4 text-[#9E9EA8]" />
+              </div>
+              <p className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
+                {analytics.occupancyRatePercent}%
+              </p>
+              <div className="w-full bg-[#0B0B0C] h-1.5 rounded-xs overflow-hidden border border-[#242429]">
+                <div
+                  className="bg-[#D4FF00] h-full"
+                  style={{ width: `${Math.min(100, analytics.occupancyRatePercent || 0)}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] font-semibold text-[#9E9EA8] uppercase tracking-wider">
+                  Seats Sold
+                </span>
+                <Users className="w-4 h-4 text-[#9E9EA8]" />
+              </div>
+              <p className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
+                {analytics.bookedSeats}{' '}
+                <span className="text-lg text-[#666670] font-normal">/ {analytics.totalCapacity}</span>
+              </p>
+              <span className="font-mono text-[11px] text-[#9E9EA8] block">
+                {analytics.availableSeats} open seats
               </span>
             </div>
 
-            <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Seat Occupancy</span>
-                <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl border border-indigo-500/20">
-                  <PieChart className="w-5 h-5" />
-                </div>
+            <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[10px] font-semibold text-[#9E9EA8] uppercase tracking-wider">
+                  Gate Check-Ins
+                </span>
+                <UserCheck className="w-4 h-4 text-[#D4FF00]" />
               </div>
-              <p className="text-3xl font-black text-white tracking-tight">{analytics.occupancyRatePercent}%</p>
-              <div className="w-full bg-[#131522] h-2.5 rounded-full mt-3 overflow-hidden border border-white/10">
-                <div className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full" style={{ width: `${analytics.occupancyRatePercent}%` }} />
-              </div>
-            </div>
-
-            <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Seats Reserved</span>
-                <div className="p-3 bg-purple-500/10 text-purple-400 rounded-2xl border border-purple-500/20">
-                  <Users className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-3xl font-black text-white tracking-tight">
-                {analytics.bookedSeats} / {analytics.totalCapacity}
+              <p className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
+                {analytics.totalCheckedIn}{' '}
+                <span className="text-lg text-[#666670] font-normal">/ {analytics.totalTicketsIssued}</span>
               </p>
-              <span className="text-xs text-zinc-400 mt-2 block font-semibold">{analytics.availableSeats} seats remaining</span>
-            </div>
-
-            <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Gate Check-Ins</span>
-                <div className="p-3 bg-amber-500/10 text-amber-400 rounded-2xl border border-amber-500/20">
-                  <UserCheck className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-3xl font-black text-white tracking-tight">
-                {analytics.totalCheckedIn} / {analytics.totalTicketsIssued}
-              </p>
-              <span className="text-xs text-amber-400 mt-2 block font-bold">Physical Venue Entrances</span>
+              <span className="font-mono text-[11px] text-[#9E9EA8] block">Verified at door</span>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

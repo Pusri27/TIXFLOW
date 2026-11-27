@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Lock, AlertCircle, Sparkles, ShieldCheck, Ticket, Eye, EyeOff, Zap, UserCheck } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('john@example.com');
@@ -22,7 +22,7 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.');
+      setError(err.response?.data?.message || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }
@@ -34,128 +34,118 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Left Hero Feature Panel */}
+    <div className="max-w-5xl mx-auto px-4 sm:px-8 py-12 sm:py-20">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        {/* Left Editorial Column */}
         <div className="lg:col-span-6 space-y-6">
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-indigo-300">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>TIXFLOW Enterprise Portal</span>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-            Next-Gen Ticket Reservation &amp; Gate Control
-          </h1>
-
-          <p className="text-zinc-400 text-sm leading-relaxed">
-            Sign in to access your reserved stadium passes, real-time Redis seat holds, dynamic anti-fraud TOTP QR codes, and P2P ticket transfers.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            <div className="bg-[#0d0e15] border border-white/[0.08] p-3.5 rounded-2xl flex items-center space-x-3">
-              <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400">
-                <Zap className="w-4 h-4" />
-              </div>
-              <div className="text-xs">
-                <p className="font-bold text-white">Redis Locks</p>
-                <p className="text-zinc-500 text-[11px]">Atomic 10-min seat holds</p>
-              </div>
-            </div>
-
-            <div className="bg-[#0d0e15] border border-white/[0.08] p-3.5 rounded-2xl flex items-center space-x-3">
-              <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <div className="text-xs">
-                <p className="font-bold text-white">Anti-Fraud TOTP</p>
-                <p className="text-zinc-500 text-[11px]">Dynamic 30s QR payload</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Demo Login Triggers */}
-          <div className="bg-[#0d0e15] border border-white/10 rounded-2xl p-4 text-xs space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 block mb-1">
-              One-Click Demo Account Quick Fill:
+          <div className="space-y-3">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] block">
+              Member &amp; Promoter Access
             </span>
-            <div className="flex flex-wrap gap-2">
+            <h1 className="font-display text-3xl sm:text-5xl font-bold text-[#F4F4F0] leading-[1.05] tracking-tight">
+              Your passes, holds, and gate tools in one place.
+            </h1>
+            <p className="text-[#9E9EA8] text-sm leading-relaxed">
+              Sign in to hold stadium seats, open rotating QR passes, transfer tickets to friends, or manage live venue check-ins.
+            </p>
+          </div>
+
+          {/* Demo Account Switcher */}
+          <div className="bg-[#121214] border border-[#242429] rounded-lg p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#9E9EA8]">
+                Demo Quick-Fill
+              </span>
+              <span className="font-mono text-[10px] text-[#666670]">1-Click Credentials</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <button
                 type="button"
                 onClick={() => handleQuickFill('john@example.com', 'admin123')}
-                className="bg-[#181a28] hover:bg-[#202336] border border-white/10 text-zinc-200 px-3 py-1.5 rounded-xl font-semibold flex items-center space-x-1.5 transition-colors cursor-pointer"
+                className={`text-left p-3 rounded-md border transition-colors cursor-pointer ${
+                  email === 'john@example.com'
+                    ? 'bg-[#17171A] border-[#D4FF00] text-[#F4F4F0]'
+                    : 'bg-[#0B0B0C] border-[#242429] text-[#9E9EA8] hover:border-[#34343C]'
+                }`}
               >
-                <UserCheck className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Fill Customer (John Doe)</span>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#D4FF00] block">
+                  Attendee
+                </span>
+                <span className="text-xs font-semibold text-[#F4F4F0] block mt-0.5">John Doe</span>
+                <span className="font-mono text-[11px] text-[#666670]">john@example.com</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleQuickFill('admin@ticketapp.com', 'admin123')}
-                className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-xl font-bold flex items-center space-x-1.5 transition-colors cursor-pointer"
+                className={`text-left p-3 rounded-md border transition-colors cursor-pointer ${
+                  email === 'admin@ticketapp.com'
+                    ? 'bg-[#17171A] border-[#D4FF00] text-[#F4F4F0]'
+                    : 'bg-[#0B0B0C] border-[#242429] text-[#9E9EA8] hover:border-[#34343C]'
+                }`}
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                <span>Fill Admin (Promoter)</span>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#D4FF00] block">
+                  Organizer / Gate
+                </span>
+                <span className="text-xs font-semibold text-[#F4F4F0] block mt-0.5">Promoter Console</span>
+                <span className="font-mono text-[11px] text-[#666670]">admin@ticketapp.com</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Right Authentication Form Panel */}
+        {/* Right Sign-In Form */}
         <div className="lg:col-span-6">
-          <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-2xl">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                <LogIn className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-white tracking-tight">Account Sign In</h2>
-                <p className="text-xs text-zinc-400">Enter credentials to authenticate</p>
-              </div>
+          <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-6">
+            <div>
+              <h2 className="font-display text-2xl font-bold text-[#F4F4F0]">Sign In</h2>
+              <p className="text-xs text-[#9E9EA8] mt-1">Enter your account email and password.</p>
             </div>
 
             {error && (
-              <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs p-4 rounded-2xl mb-6 flex items-center space-x-3 font-semibold">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <div className="bg-red-500/10 border border-red-500/40 text-red-300 text-xs p-3.5 rounded-md flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-2">
-                  Email Address
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
+                  Email
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-zinc-500 absolute left-4 top-4" />
+                  <Mail className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="john@example.com"
-                    className="w-full bg-[#131522] border border-white/10 focus:border-indigo-500 text-white pl-11 pr-4 py-3.5 rounded-2xl text-sm outline-none transition-colors"
+                    placeholder="you@example.com"
+                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-3 rounded-md text-sm outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-2">
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-zinc-500 absolute left-4 top-4" />
+                  <Lock className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-[#131522] border border-white/10 focus:border-indigo-500 text-white pl-11 pr-11 py-3.5 rounded-2xl text-sm outline-none transition-colors"
+                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-10 py-3 rounded-md text-sm outline-none transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-4 text-zinc-500 hover:text-zinc-300"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#666670] hover:text-[#F4F4F0] cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -165,17 +155,18 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-white hover:bg-zinc-200 text-black font-black rounded-2xl shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] mt-2 text-sm cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-50 mt-2"
               >
-                {loading ? 'Authenticating Credentials...' : 'Sign In to Portal'}
+                <span>{loading ? 'Signing In...' : 'Sign In'}</span>
+                {!loading && <ArrowRight className="w-4 h-4" />}
               </button>
             </form>
 
-            <div className="border-t border-white/[0.08] pt-6 mt-6 text-center">
-              <p className="text-xs text-zinc-400">
-                Don't have an account yet?{' '}
-                <Link to="/register" className="text-indigo-400 hover:underline font-bold">
-                  Create New Account
+            <div className="border-t border-[#242429] pt-5 text-center">
+              <p className="text-xs text-[#9E9EA8]">
+                New to TIXFLOW?{' '}
+                <Link to="/register" className="text-[#D4FF00] hover:underline font-semibold">
+                  Create an account
                 </Link>
               </p>
             </div>

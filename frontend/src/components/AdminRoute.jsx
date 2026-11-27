@@ -7,7 +7,11 @@ export default function AdminRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="text-center py-24 text-zinc-400 font-semibold">Verifying role permissions...</div>;
+    return (
+      <div className="text-center py-24 font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">
+        Checking permissions...
+      </div>
+    );
   }
 
   if (!user) {
@@ -16,37 +20,42 @@ export default function AdminRoute({ children }) {
 
   if (user.role !== 'ADMIN') {
     return (
-      <div className="max-w-xl mx-auto px-4 py-20 text-center">
-        <div className="bg-[#0d0e15] border border-rose-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-xl">
-          <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <ShieldAlert className="w-8 h-8" />
+      <div className="max-w-lg mx-auto px-4 py-20">
+        <div className="bg-[#121214] border border-[#242429] rounded-lg p-8 space-y-6">
+          <div className="w-11 h-11 bg-red-500/10 border border-red-500/30 text-red-400 rounded-md flex items-center justify-center">
+            <ShieldAlert className="w-5 h-5" />
           </div>
 
-          <span className="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-widest px-3.5 py-1 rounded-full">
-            Restricted Admin Console
-          </span>
-
-          <h1 className="text-3xl font-black text-white mt-4 mb-2 tracking-tight">Access Denied</h1>
-          <p className="text-zinc-400 text-sm mb-6 leading-relaxed">
-            Your account (<strong className="text-white">{user.email}</strong>) is registered with role <strong className="text-amber-400">USER</strong>. Admin privileges are required to access management & scanner tools.
-          </p>
-
-          <div className="p-4 rounded-2xl bg-[#131522] border border-white/10 text-xs text-zinc-300 mb-6 text-left space-y-1">
-            <p className="font-bold text-indigo-400 flex items-center space-x-1.5 mb-2">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Test Admin Account Credentials:</span>
+          <div className="space-y-2">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-red-400 block">
+              Organizer Access Required
+            </span>
+            <h1 className="font-display text-2xl font-bold text-[#F4F4F0]">Restricted Console</h1>
+            <p className="text-[#9E9EA8] text-xs leading-relaxed">
+              Signed in as <strong className="text-[#F4F4F0]">{user.email}</strong> (Attendee). Promoter permissions are required to publish events, view sales analytics, or operate the gate scanner.
             </p>
-            <p>Email: <strong className="text-white font-mono">admin@ticketapp.com</strong></p>
-            <p>Password: <strong className="text-white font-mono">admin123</strong></p>
           </div>
 
-          <div className="flex justify-center space-x-3">
+          <div className="p-4 rounded-md bg-[#0B0B0C] border border-[#242429] font-mono text-xs space-y-1">
+            <p className="text-[#D4FF00] font-semibold flex items-center gap-1.5 mb-1.5">
+              <Lock className="w-3.5 h-3.5" />
+              <span>Demo Organizer Account</span>
+            </p>
+            <p className="text-[#9E9EA8]">
+              Email: <span className="text-[#F4F4F0]">admin@ticketapp.com</span>
+            </p>
+            <p className="text-[#9E9EA8]">
+              Password: <span className="text-[#F4F4F0]">admin123</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
             <Link
               to="/"
-              className="bg-white text-black hover:bg-zinc-200 font-extrabold px-5 py-3 rounded-2xl text-xs transition-all flex items-center space-x-2"
+              className="bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold px-4 py-2.5 rounded-md text-xs transition-colors inline-flex items-center gap-2"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Return to Discovery</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Events</span>
             </Link>
           </div>
         </div>

@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { bookingApi } from '../services/api';
-import { Clock, CreditCard, CheckCircle2, ShieldCheck, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { Clock, CreditCard, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Copy, Check } from 'lucide-react';
+
+const TEST_CARDS = [
+  { label: 'Visa — Standard Approval', note: ' Instant success', number: '4242 4242 4242 4242', tone: 'text-[#D4FF00]' },
+  { label: 'Mastercard — Standard Approval', note: 'Instant success', number: '5555 5555 5555 4444', tone: 'text-[#D4FF00]' },
+  { label: '3D Secure Challenge', note: 'OTP verification', number: '4000 0000 0000 3020', tone: 'text-amber-400' },
+  { label: 'Declined Card', note: 'Simulates bank decline', number: '4000 0000 0000 0002', tone: 'text-red-400' },
+];
 
 export default function CheckoutPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,6 +22,7 @@ export default function CheckoutPage() {
   const [paymentDone, setPaymentDone] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600);
   const [expiredError, setExpiredError] = useState(null);
+  const [copiedCard, setCopiedCard] = useState(null);
 
   useEffect(() => {
     fetchBooking();
@@ -37,7 +47,7 @@ export default function CheckoutPage() {
       setTimeLeft(diffSec);
 
       if (diffSec <= 0) {
-        setExpiredError('Reservation time expired');
+        setExpiredError('Seat hold expired');
       }
     }
 
@@ -45,7 +55,7 @@ export default function CheckoutPage() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          setExpiredError('Reservation time expired');
+          setExpiredError('Seat hold expired');
           return 0;
         }
         return prev - 1;
@@ -67,8 +77,7 @@ export default function CheckoutPage() {
           setPaymentDone(true);
         }
       } else {
-        const resList = await bookingApi.getMyBookings();
-        setBooking(resList.data?.[0] || null);
+        setBooking(list[0] || null);
       }
     } catch (err) {
       console.error(err);
@@ -90,35 +99,24 @@ export default function CheckoutPage() {
       const status = err.response?.status;
       const msg = err.response?.data?.message || err.message;
       if (status === 409 || status === 400) {
-        setExpiredError(msg || 'Reservation time expired. Please pick seats again.');
+        setExpiredError(msg || 'Reservation window expired. Please select seats again.');
         setTimeLeft(0);
       } else {
-        alert('Payment failed: ' + msg);
+        showToast({
+          type: 'error',
+          title: 'Payment Error',
+          message: msg,
+        });
       }
     } finally {
       setPaying(false);
     }
   };
 
-  const handleSimulateStripePayment = async () => {
-    setPaying(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      const res = await bookingApi.confirm(id, 'STRIPE');
-      setBooking(res.data);
-      setPaymentDone(true);
-    } catch (err) {
-      const status = err.response?.status;
-      const msg = err.response?.data?.message || err.message;
-      if (status === 409 || status === 400) {
-        setExpiredError(msg || 'Reservation time expired. Please pick seats again.');
-        setTimeLeft(0);
-      } else {
-        alert('Payment execution failed: ' + msg);
-      }
-    } finally {
-      setPaying(false);
-    }
+  const handleCopyCard = (number) => {
+    navigator.clipboard?.writeText(number.replace(/\s+/g, ''));
+    setCopiedCard(number);
+    setTimeout(() => setCopiedCard(null), 1800);
   };
 
   const formatTimer = (seconds) => {
@@ -129,225 +127,223 @@ export default function CheckoutPage() {
 
   if (loading || !booking) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="text-center">
-          <div className="w-10 h-10 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-zinc-400 font-semibold text-sm">Loading secure payment portal...</p>
-        </div>
+      <div className="max-w-3xl mx-auto px-4 py-24 text-center">
+        <div className="w-7 h-7 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-3" />
+        <p className="font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">Preparing order summary...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-8 py-10 sm:py-12">
       {!paymentDone ? (
-        <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-xl">
-          {/* Countdown Header */}
-          <div className={`border rounded-2xl p-4 mb-8 flex items-center justify-between ${
-            timeLeft < 60
-              ? 'bg-rose-500/10 border-rose-500/30'
-              : 'bg-amber-500/10 border-amber-500/30'
-          }`}>
-            <div className="flex items-center space-x-3">
-              <Clock className={`w-5 h-5 animate-pulse ${timeLeft < 60 ? 'text-rose-400' : 'text-amber-400'}`} />
+        <div className="space-y-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-xs font-semibold text-[#9E9EA8] hover:text-[#D4FF00] transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Floorplan</span>
+          </button>
+
+          {/* Hold Countdown Strip */}
+          <div
+            className={`border rounded-lg p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+              timeLeft < 60
+                ? 'bg-red-500/10 border-red-500/40'
+                : 'bg-[#121214] border-[#242429]'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Clock className={`w-5 h-5 ${timeLeft < 60 ? 'text-red-400' : 'text-[#D4FF00]'}`} />
               <div>
-                <p className={`text-xs font-bold uppercase tracking-wider ${timeLeft < 60 ? 'text-rose-300' : 'text-amber-300'}`}>
-                  Complete Payment Within
+                <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#9E9EA8]">
+                  Seats Held For
                 </p>
-                <p className={`text-3xl font-black tracking-tight tabular-nums ${timeLeft < 60 ? 'text-rose-400' : 'text-amber-400'}`}>
+                <p
+                  className={`font-mono text-2xl font-bold tabular-nums leading-tight ${
+                    timeLeft < 60 ? 'text-red-400' : 'text-[#F4F4F0]'
+                  }`}
+                >
                   {formatTimer(timeLeft)}
                 </p>
               </div>
             </div>
-            <span className="text-xs text-zinc-400 font-medium max-w-xs text-right hidden sm:block">
-              Your selected seats are atomically locked in Redis until the countdown expires.
-            </span>
+            <p className="text-xs text-[#9E9EA8]">
+              Complete checkout before the timer expires to keep your seats.
+            </p>
           </div>
 
           {(timeLeft === 0 || expiredError) && (
-            <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm p-4 rounded-2xl mb-6 flex items-center justify-between space-x-3">
-              <div className="flex items-center space-x-3">
-                <AlertCircle className="w-5 h-5 shrink-0 text-rose-400" />
-                <span className="font-semibold">
+            <div className="bg-red-500/10 border border-red-500/40 text-red-200 text-xs p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                <span>
                   {expiredError
-                    ? `Booking error: ${expiredError}`
-                    : 'Your seat reservation has expired. Please go back and select seats again.'}
+                    ? `${expiredError}. Please return to the floorplan and pick available seats.`
+                    : 'Your seat hold has expired.'}
                 </span>
               </div>
               <button
                 onClick={() => navigate(-1)}
-                className="shrink-0 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="shrink-0 bg-[#121214] hover:bg-[#17171A] border border-red-500/40 text-[#F4F4F0] px-3.5 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer"
               >
-                ← Pick Seats Again
+                Select Seats Again
               </button>
             </div>
           )}
 
-          <h1 className="text-3xl font-black text-white mb-6 tracking-tight">Checkout &amp; Payment Gate</h1>
-
-          <div className="space-y-5 mb-8 border-b border-white/[0.08] pb-8">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-400 font-medium">Reservation Code:</span>
-              <span className="font-mono font-bold text-indigo-400 text-base">{booking.bookingCode}</span>
-            </div>
-
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-zinc-400 font-medium">Event Title:</span>
-              <span className="font-bold text-zinc-100">{booking.eventName}</span>
-            </div>
-
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Reserved Seats</p>
-              <div className="space-y-2.5">
-                {(booking.items || []).map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center bg-[#131522] p-3.5 rounded-2xl border border-white/[0.08] text-sm"
-                  >
-                    <span className="font-bold text-zinc-200">
-                      Row {item.rowLabel} — Seat #{item.seatNumber} ({item.categoryName})
-                    </span>
-                    <span className="font-black text-white">
-                      ${item.price?.toLocaleString('en-US')}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-4 border-t border-white/[0.08]">
-              <span className="text-base font-bold text-zinc-300">Total Amount:</span>
-              <span className="text-3xl font-black text-white">
-                ${booking.totalAmount?.toLocaleString('en-US')}
-              </span>
-            </div>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="space-y-5">
-            {/* Primary — Official Stripe Hosted Checkout */}
-            <button
-              onClick={handlePayNow}
-              disabled={paying || timeLeft === 0}
-              className="w-full py-4.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-black rounded-2xl shadow-2xl shadow-indigo-600/40 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-3 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-base border border-indigo-400/30"
-            >
-              {paying ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Connecting to Official Stripe Gateway...</span>
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-6 h-6 text-white" />
-                  <span>Pay via Official Stripe Checkout (${booking.totalAmount?.toLocaleString('en-US')})</span>
-                </>
-              )}
-            </button>
-
-            {/* Stripe Test Cards Grid */}
-            <div className="bg-[#131522] border border-white/[0.08] rounded-2xl p-5 text-xs text-zinc-400 space-y-3">
-              <div className="flex items-center justify-between border-b border-white/[0.06] pb-2.5">
-                <div className="flex items-center space-x-2">
-                  <CreditCard className="w-4 h-4 text-indigo-400" />
-                  <span className="font-bold text-zinc-200">Official Stripe Test Cards (Sandbox Mode)</span>
+          {/* Main Checkout Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Order Summary */}
+            <div className="lg:col-span-7 bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-6">
+              <div className="border-b border-[#242429] pb-4 flex items-baseline justify-between gap-4">
+                <div>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#666670] block">
+                    Order Review
+                  </span>
+                  <h1 className="font-display text-2xl font-bold text-[#F4F4F0] mt-0.5">
+                    {booking.eventName}
+                  </h1>
                 </div>
-                <span className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-2.5 py-0.5 rounded-full font-bold text-[10px]">
-                  TEST NETWORK
+                <span className="font-mono text-xs text-[#D4FF00] bg-[#17171A] border border-[#242429] px-2.5 py-1 rounded">
+                  {booking.bookingCode}
                 </span>
               </div>
 
-              <p className="text-[11px] text-zinc-400">
-                Use the following official Stripe test card numbers on <span className="text-zinc-200 font-mono">checkout.stripe.com</span>. Enter any future expiry date (e.g. <span className="text-zinc-200 font-mono">12/28</span>) &amp; CVC <span className="text-zinc-200 font-mono">123</span>.
+              <div className="space-y-2.5">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#666670] block">
+                  Tickets ({(booking.items || []).length})
+                </span>
+                <div className="divide-y divide-[#242429] border border-[#242429] rounded-md bg-[#0B0B0C]">
+                  {(booking.items || []).map((item) => (
+                    <div key={item.id} className="flex justify-between items-center px-4 py-3 text-xs">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono font-bold text-[#0B0B0C] bg-[#D4FF00] px-1.5 py-0.5 rounded-sm">
+                          {item.rowLabel}-{item.seatNumber}
+                        </span>
+                        <span className="text-[#F4F4F0] font-medium">{item.categoryName}</span>
+                      </div>
+                      <span className="font-mono font-semibold text-[#F4F4F0]">
+                        ${item.price?.toLocaleString('en-US')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-[#242429] pt-5 flex items-baseline justify-between">
+                <span className="font-mono text-xs uppercase tracking-wider text-[#9E9EA8]">
+                  Total Due
+                </span>
+                <span className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
+                  ${booking.totalAmount?.toLocaleString('en-US')}
+                </span>
+              </div>
+
+              <button
+                onClick={handlePayNow}
+                disabled={paying || timeLeft === 0}
+                className="w-full py-4 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+              >
+                {paying ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-[#0B0B0C]/30 border-t-[#0B0B0C] rounded-full animate-spin" />
+                    <span>Redirecting to Stripe...</span>
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4" />
+                    <span>Pay ${booking.totalAmount?.toLocaleString('en-US')} with Stripe</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Sandbox Test Cards Helper */}
+            <div className="lg:col-span-5 bg-[#121214] border border-[#242429] rounded-lg p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-[#242429] pb-3">
+                <span className="font-mono text-xs font-semibold text-[#F4F4F0] uppercase tracking-wider">
+                  Stripe Sandbox Cards
+                </span>
+                <span className="font-mono text-[10px] text-[#D4FF00] border border-[#D4FF00]/40 px-2 py-0.5 rounded-sm">
+                  TEST MODE
+                </span>
+              </div>
+
+              <p className="text-xs text-[#9E9EA8] leading-relaxed">
+                Click any card number to copy for <span className="font-mono text-[#F4F4F0]">checkout.stripe.com</span>. Use any future expiry (<span className="font-mono text-[#F4F4F0]">12/29</span>) and CVC <span className="font-mono text-[#F4F4F0]">123</span>.
               </p>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center bg-[#0d0e15] border border-white/[0.06] p-2.5 rounded-xl">
-                  <div>
-                    <span className="text-white font-bold text-xs block">Visa (Standard Success)</span>
-                    <span className="text-[10px] text-emerald-400 font-semibold">✓ Payment Success</span>
-                  </div>
-                  <span className="font-mono font-bold text-white bg-white/5 px-2 py-1 rounded border border-white/10 text-xs">
-                    4242 4242 4242 4242
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center bg-[#0d0e15] border border-white/[0.06] p-2.5 rounded-xl">
-                  <div>
-                    <span className="text-white font-bold text-xs block">Mastercard (Success)</span>
-                    <span className="text-[10px] text-emerald-400 font-semibold">✓ Payment Success</span>
-                  </div>
-                  <span className="font-mono font-bold text-white bg-white/5 px-2 py-1 rounded border border-white/10 text-xs">
-                    5555 5555 5555 4444
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center bg-[#0d0e15] border border-white/[0.06] p-2.5 rounded-xl">
-                  <div>
-                    <span className="text-white font-bold text-xs block">American Express (Success)</span>
-                    <span className="text-[10px] text-emerald-400 font-semibold">✓ Payment Success</span>
-                  </div>
-                  <span className="font-mono font-bold text-white bg-white/5 px-2 py-1 rounded border border-white/10 text-xs">
-                    3782 822463 10005
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center bg-[#0d0e15] border border-white/[0.06] p-2.5 rounded-xl">
-                  <div>
-                    <span className="text-white font-bold text-xs block">3D Secure OTP Authentication</span>
-                    <span className="text-[10px] text-amber-400 font-semibold">⚡ 3DS OTP Authentication</span>
-                  </div>
-                  <span className="font-mono font-bold text-white bg-white/5 px-2 py-1 rounded border border-white/10 text-xs">
-                    4000 0000 0000 3020
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center bg-[#0d0e15] border border-white/[0.06] p-2.5 rounded-xl">
-                  <div>
-                    <span className="text-white font-bold text-xs block">Card Declined (Test Failure)</span>
-                    <span className="text-[10px] text-rose-400 font-semibold">✕ Bank Declined</span>
-                  </div>
-                  <span className="font-mono font-bold text-white bg-white/5 px-2 py-1 rounded border border-white/10 text-xs">
-                    4000 0000 0000 0002
-                  </span>
-                </div>
+                {TEST_CARDS.map((card) => {
+                  const isCopied = copiedCard === card.number;
+                  return (
+                    <button
+                      key={card.number}
+                      type="button"
+                      onClick={() => handleCopyCard(card.number)}
+                      className="w-full text-left flex items-center justify-between bg-[#0B0B0C] hover:bg-[#17171A] border border-[#242429] px-3 py-2.5 rounded-md transition-colors cursor-pointer group"
+                    >
+                      <div>
+                        <span className="text-xs font-medium text-[#F4F4F0] block">{card.label}</span>
+                        <span className={`font-mono text-[10px] ${card.tone}`}>{card.note}</span>
+                      </div>
+                      <div className="flex items-center gap-2 font-mono text-xs text-[#F4F4F0] bg-[#121214] border border-[#242429] px-2 py-1 rounded">
+                        <span>{card.number}</span>
+                        {isCopied ? (
+                          <Check className="w-3 h-3 text-[#D4FF00]" />
+                        ) : (
+                          <Copy className="w-3 h-3 text-[#666670] group-hover:text-[#D4FF00]" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
       ) : (
-        /* Payment Success Screen */
-        <div className="bg-[#0d0e15] border border-emerald-500/30 rounded-3xl p-10 shadow-2xl text-center max-w-xl mx-auto space-y-6">
-          <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto text-emerald-400 shadow-xl shadow-emerald-500/20">
-            <CheckCircle2 className="w-10 h-10" />
+        /* Confirmed Receipt */
+        <div className="bg-[#121214] border border-[#242429] rounded-lg p-8 sm:p-10 max-w-xl mx-auto space-y-6">
+          <div className="w-12 h-12 bg-[#D4FF00] text-[#0B0B0C] rounded-md flex items-center justify-center">
+            <CheckCircle2 className="w-6 h-6" />
           </div>
 
-          <div>
-            <h2 className="text-3xl font-black text-white tracking-tight">Payment Verified &amp; Confirmed!</h2>
-            <p className="text-zinc-400 text-sm mt-2">
-              Your ticket reservation for <span className="text-white font-bold">{booking.eventName}</span> has been confirmed. PDF passes are generated.
+          <div className="space-y-1.5">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00]">
+              Order Confirmed
+            </span>
+            <h2 className="font-display text-3xl font-bold text-[#F4F4F0]">
+              Passes Ready
+            </h2>
+            <p className="text-[#9E9EA8] text-sm">
+              Your seats for <span className="text-[#F4F4F0] font-semibold">{booking.eventName}</span> are locked in and mobile QR passes have been issued.
             </p>
           </div>
 
-          <div className="bg-[#131522] border border-white/[0.08] p-4 rounded-2xl text-xs space-y-2 text-left">
+          <div className="bg-[#0B0B0C] border border-[#242429] p-4 rounded-md font-mono text-xs space-y-2.5">
             <div className="flex justify-between">
-              <span className="text-zinc-400">Booking Code:</span>
-              <span className="font-mono font-bold text-indigo-400">{booking.bookingCode}</span>
+              <span className="text-[#666670]">Reference</span>
+              <span className="text-[#D4FF00] font-semibold">{booking.bookingCode}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-400">Status:</span>
-              <span className="font-bold text-emerald-400">CONFIRMED (Paid via Stripe)</span>
+              <span className="text-[#666670]">Status</span>
+              <span className="text-[#F4F4F0]">PAID · STRIPE</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-zinc-400">Total Paid:</span>
-              <span className="font-bold text-white">${booking.totalAmount?.toLocaleString('en-US')}</span>
+            <div className="flex justify-between pt-2 border-t border-[#242429]">
+              <span className="text-[#666670]">Amount Paid</span>
+              <span className="text-[#F4F4F0] font-bold">${booking.totalAmount?.toLocaleString('en-US')}</span>
             </div>
           </div>
 
           <button
             onClick={() => navigate('/my-tickets')}
-            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black rounded-2xl shadow-xl shadow-blue-600/30 transition-all flex items-center justify-center space-x-2 cursor-pointer text-sm"
+            className="w-full py-3.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm"
           >
-            <span>View Purchased Tickets in My Wallet</span>
+            <span>Open My Passes</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

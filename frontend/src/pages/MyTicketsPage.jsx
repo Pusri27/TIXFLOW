@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ticketApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
-import { Ticket, Calendar, MapPin, Download, QrCode, X, Send, ShieldCheck, RefreshCw, Sparkles, CheckCircle2, UserCheck, Lock } from 'lucide-react';
+import { Calendar, MapPin, Download, QrCode, X, Send, RefreshCw, CheckCircle2, Lock, ArrowUpRight, Copy, Check } from 'lucide-react';
 
 export default function MyTicketsPage() {
   const { showToast } = useToast();
@@ -10,6 +11,7 @@ export default function MyTicketsPage() {
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [activeQrTicket, setActiveQrTicket] = useState(null);
   const [dynamicQrData, setDynamicQrData] = useState(null);
+  const [copiedToken, setCopiedToken] = useState(false);
   const [transferTicketTarget, setTransferTicketTarget] = useState(null);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [transferring, setTransferring] = useState(false);
@@ -21,8 +23,8 @@ export default function MyTicketsPage() {
       setShowSuccessBanner(true);
       showToast({
         type: 'success',
-        title: 'Payment Confirmed! 🎉',
-        message: 'Congratulations! Your Stripe Sandbox payment was verified. Your official E-Ticket PDF and Dynamic QR Code are now active.',
+        title: 'Order Confirmed',
+        message: 'Your payment is verified. Dynamic QR passes and PDF downloads are ready.',
       });
       window.history.replaceState(null, '', window.location.pathname);
     }
@@ -57,6 +59,12 @@ export default function MyTicketsPage() {
     }
   };
 
+  const handleCopyPayload = (text) => {
+    navigator.clipboard?.writeText(text);
+    setCopiedToken(true);
+    setTimeout(() => setCopiedToken(false), 1800);
+  };
+
   const handleTransferSubmit = async (e) => {
     e.preventDefault();
     if (!transferTicketTarget || !recipientEmail.trim()) return;
@@ -66,8 +74,8 @@ export default function MyTicketsPage() {
       await ticketApi.transfer(transferTicketTarget.id, recipientEmail.trim());
       showToast({
         type: 'success',
-        title: 'P2P Transfer Complete',
-        message: `Ticket pass successfully transferred to ${recipientEmail}`,
+        title: 'Pass Transferred',
+        message: `Ownership transferred to ${recipientEmail.trim()}.`,
       });
       setTransferTicketTarget(null);
       setRecipientEmail('');
@@ -76,8 +84,8 @@ export default function MyTicketsPage() {
       console.error(err);
       showToast({
         type: 'error',
-        title: 'Transfer Failed',
-        message: err.response?.data?.message || err.message || 'Tiket yang sudah discan/digunakan tidak dapat ditransfer!',
+        title: 'Transfer Unavailable',
+        message: err.response?.data?.message || err.message || 'Checked-in passes cannot be transferred.',
       });
     } finally {
       setTransferring(false);
@@ -85,261 +93,307 @@ export default function MyTicketsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
-      <div className="flex items-center space-x-4 mb-10">
-        <div className="bg-gradient-to-tr from-indigo-500 to-purple-500 p-3.5 rounded-2xl border border-white/10 text-white shadow-xl shadow-indigo-500/20">
-          <Ticket className="w-8 h-8" />
-        </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-8 py-10 sm:py-12 space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#242429] pb-6">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight">My Purchased Passes</h1>
-          <p className="text-zinc-400 text-sm mt-1">Manage your active event tickets, generate dynamic QR codes, or transfer passes.</p>
+          <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] block mb-1">
+            Pass Wallet
+          </span>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#F4F4F0] tracking-tight">
+            My Passes
+          </h1>
+          <p className="text-[#9E9EA8] text-xs sm:text-sm mt-1">
+            Present rotating QR codes at the gate, download PDF stubs, or transfer unused passes.
+          </p>
         </div>
+
+        {!loading && (
+          <span className="font-mono text-xs text-[#9E9EA8] bg-[#121214] border border-[#242429] px-3 py-1.5 rounded-md w-fit">
+            {tickets.length} {tickets.length === 1 ? 'active pass' : 'passes'}
+          </span>
+        )}
       </div>
 
       {showSuccessBanner && (
-        <div className="mb-8 p-6 bg-gradient-to-r from-emerald-950/80 via-emerald-900/40 to-emerald-950/80 border border-emerald-500/40 rounded-3xl backdrop-blur-xl shadow-2xl shadow-emerald-500/10 flex items-start sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-              <CheckCircle2 className="w-7 h-7 animate-pulse" />
+        <div className="p-5 bg-[#121214] border border-[#D4FF00]/50 rounded-lg flex items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-9 h-9 rounded bg-[#D4FF00] text-[#0B0B0C] flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                Payment Confirmed! 🎉
-                <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-500/30 font-mono">STRIPE SUCCESS</span>
+              <h3 className="font-display text-base font-bold text-[#F4F4F0]">
+                Payment Confirmed
               </h3>
-              <p className="text-emerald-200/80 text-sm mt-0.5">
-                Congratulations! Your Stripe Sandbox payment has been verified. Your official E-Ticket PDF and Dynamic QR Code are now active below.
+              <p className="text-[#9E9EA8] text-xs mt-0.5">
+                Your Stripe checkout succeeded. Entry passes and PDF stubs are active below.
               </p>
             </div>
           </div>
           <button
             onClick={() => setShowSuccessBanner(false)}
-            className="text-emerald-400/60 hover:text-emerald-300 p-2 hover:bg-emerald-500/10 rounded-xl transition-all shrink-0"
+            className="text-[#666670] hover:text-[#F4F4F0] p-1.5 rounded hover:bg-[#17171A] cursor-pointer shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <div className="text-center">
-            <div className="w-10 h-10 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-zinc-400 font-semibold text-sm">Loading your digital pass wallet...</p>
-          </div>
+        <div className="py-24 text-center">
+          <div className="w-7 h-7 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-3" />
+          <p className="font-mono text-xs text-[#9E9EA8] uppercase tracking-wider">Loading passes...</p>
         </div>
       ) : tickets.length === 0 ? (
-        <div className="text-center py-20 bg-[#0d0e15] rounded-3xl border border-white/10 p-8">
-          <Sparkles className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-white mb-2">No Active Tickets Found</h3>
-          <p className="text-zinc-400 text-sm max-w-md mx-auto mb-6">
-            You don't have any confirmed event tickets yet. Explore upcoming concerts and reserve your seats now!
+        <div className="text-center py-20 bg-[#121214] rounded-lg border border-[#242429] px-6 space-y-4">
+          <h3 className="font-display text-xl font-bold text-[#F4F4F0]">No Passes Yet</h3>
+          <p className="text-[#9E9EA8] text-xs max-w-md mx-auto">
+            Confirmed tickets appear here automatically with rotating gate QR tokens and downloadable PDFs.
           </p>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold px-5 py-2.5 rounded-md text-xs transition-colors"
+          >
+            <span>Browse Events</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {tickets.map((t) => (
             <div
               key={t.id}
-              className={`bg-[#0d0e15] border rounded-3xl p-6 sm:p-8 shadow-2xl transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ${
-                t.isUsed ? 'border-emerald-500/30 bg-emerald-950/10' : 'border-white/10'
-              }`}
+              className="bg-[#121214] border border-[#242429] rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-12"
             >
-              <div className="space-y-3 max-w-xl">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-                    {t.ticketCode}
-                  </span>
-
-                  {t.isUsed ? (
-                    <span className="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1.5 shadow-lg shadow-emerald-500/10">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>CHECKED IN AT VENUE GATE</span>
+              {/* Left Main Ticket Face */}
+              <div className="md:col-span-8 p-6 sm:p-7 space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 font-mono text-[11px]">
+                    <span className="text-[#F4F4F0] bg-[#17171A] border border-[#242429] px-2.5 py-0.5 rounded">
+                      {t.ticketCode}
                     </span>
-                  ) : (
-                    <span className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-bold text-xs px-3 py-1 rounded-full flex items-center space-x-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>VALID ENTRY PASS</span>
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-2xl font-black text-white tracking-tight">{t.eventName}</h3>
-
-                <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-zinc-300">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-4 h-4 text-indigo-400" />
-                    <span>{new Date(t.eventStartTime).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4 text-emerald-400" />
-                    <span>{t.venueName}</span>
+                    {t.isUsed ? (
+                      <span className="bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-semibold px-2.5 py-0.5 rounded inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        CHECKED IN
+                      </span>
+                    ) : (
+                      <span className="bg-[#D4FF00] text-[#0B0B0C] font-bold px-2 py-0.5 rounded-sm">
+                        VALID PASS
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <div className="pt-1 text-sm">
-                  <span className="font-bold text-zinc-100">
-                    Row {t.rowLabel} — Seat #{t.seatNumber}
-                  </span>{' '}
-                  <span className="text-zinc-400 font-medium">({t.categoryName})</span>
+                <div>
+                  <h3 className="font-display text-2xl font-bold text-[#F4F4F0] tracking-tight">
+                    {t.eventName}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-[#9E9EA8] mt-2">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-[#D4FF00]" />
+                      {new Date(t.eventStartTime).toLocaleString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#9E9EA8]" />
+                      {t.venueName}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Seat Coordinates Grid */}
+                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-[#242429] font-mono">
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-[#666670] block">Row</span>
+                    <span className="text-base font-bold text-[#F4F4F0]">{t.rowLabel}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-[#666670] block">Seat</span>
+                    <span className="text-base font-bold text-[#F4F4F0]">#{t.seatNumber}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-[#666670] block">Section</span>
+                    <span className="text-xs font-semibold text-[#D4FF00]">{t.categoryName}</span>
+                  </div>
                 </div>
 
                 {t.isUsed && t.usedAt && (
-                  <p className="text-xs text-emerald-400 font-medium pt-1">
-                    ✓ Checked-in at entrance: {new Date(t.usedAt).toLocaleString()}
+                  <p className="font-mono text-[11px] text-emerald-400">
+                    Scanned at gate · {new Date(t.usedAt).toLocaleString()}
                   </p>
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              {/* Right Perforated Action Stub */}
+              <div className="md:col-span-4 border-t md:border-t-0 md:border-l border-dashed border-[#2E2E36] bg-[#0E0E11] p-6 flex flex-col justify-center gap-2.5">
                 <button
                   onClick={() => setActiveQrTicket(t)}
-                  className="flex-1 md:flex-none flex items-center justify-center space-x-2 bg-[#131522] hover:bg-[#1a1d2e] text-white px-4 py-3 rounded-2xl text-xs font-bold border border-white/10 transition-all cursor-pointer shadow-md"
+                  className="w-full flex items-center justify-center gap-2 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] px-4 py-3 rounded-md text-xs font-bold transition-colors cursor-pointer"
                 >
-                  <QrCode className="w-4 h-4 text-emerald-400" />
-                  <span>Dynamic QR</span>
+                  <QrCode className="w-4 h-4" />
+                  <span>Gate QR Code</span>
                 </button>
 
-                {/* Transfer Pass Button (Disabled if already checked in) */}
-                <button
-                  onClick={() => setTransferTicketTarget(t)}
-                  disabled={t.isUsed}
-                  className={`flex-1 md:flex-none flex items-center justify-center space-x-2 px-4 py-3 rounded-2xl text-xs font-bold border transition-all ${
-                    t.isUsed
-                      ? 'bg-zinc-900 border-zinc-800 text-zinc-600 cursor-not-allowed opacity-50'
-                      : 'bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border-indigo-500/30 cursor-pointer'
-                  }`}
-                  title={t.isUsed ? 'Already checked in at venue gate' : 'Transfer ticket to another user'}
-                >
-                  {t.isUsed ? <Lock className="w-4 h-4 text-zinc-600" /> : <Send className="w-4 h-4" />}
-                  <span>{t.isUsed ? 'Pass Used' : 'Transfer Pass'}</span>
-                </button>
-
-                {t.pdfUrl && (
-                  <a
-                    href={t.pdfUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 md:flex-none flex items-center justify-center space-x-2 bg-white hover:bg-zinc-200 text-black px-4.5 py-3 rounded-2xl text-xs font-black shadow-lg transition-all"
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setTransferTicketTarget(t)}
+                    disabled={t.isUsed}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md text-xs font-semibold border transition-colors ${
+                      t.isUsed
+                        ? 'bg-[#121214] border-[#1E1E22] text-[#666670] cursor-not-allowed'
+                        : 'bg-[#121214] hover:bg-[#17171A] text-[#F4F4F0] border-[#242429] cursor-pointer'
+                    }`}
                   >
-                    <Download className="w-4 h-4" />
-                    <span>PDF Pass</span>
-                  </a>
-                )}
+                    {t.isUsed ? <Lock className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
+                    <span>{t.isUsed ? 'Used' : 'Transfer'}</span>
+                  </button>
+
+                  {t.pdfUrl ? (
+                    <a
+                      href={t.pdfUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-1.5 bg-[#121214] hover:bg-[#17171A] text-[#F4F4F0] border border-[#242429] px-3 py-2.5 rounded-md text-xs font-semibold transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>PDF</span>
+                    </a>
+                  ) : (
+                    <span className="flex items-center justify-center bg-[#121214] text-[#666670] border border-[#1E1E22] px-3 py-2.5 rounded-md text-xs font-mono">
+                      NO PDF
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Dynamic TOTP Anti-Fraud QR Modal */}
+      {/* Rotating Gate QR Modal */}
       {activeQrTicket && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-7 max-w-sm w-full text-center relative shadow-2xl space-y-4">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-7 max-w-sm w-full text-center relative shadow-2xl space-y-5">
             <button
               onClick={() => {
                 setActiveQrTicket(null);
                 setDynamicQrData(null);
               }}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1 rounded-xl hover:bg-white/10"
+              className="absolute top-4 right-4 text-[#666670] hover:text-[#F4F4F0] p-1 rounded hover:bg-[#1E1E22] cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
 
-            {activeQrTicket.isUsed ? (
-              <div className="flex items-center justify-center space-x-2 bg-emerald-500/20 border border-emerald-500/40 px-3.5 py-1.5 rounded-full text-xs text-emerald-300 font-bold w-fit mx-auto shadow-lg">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>TICKET CHECKED-IN AT GATE</span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center space-x-2 bg-indigo-500/10 border border-indigo-500/30 px-3.5 py-1 rounded-full text-xs text-indigo-300 font-bold w-fit mx-auto">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Anti-Fraud Dynamic TOTP QR</span>
-              </div>
-            )}
-
-            <h3 className="text-xl font-black text-white tracking-tight">{activeQrTicket.eventName}</h3>
-            <p className="text-xs font-semibold text-zinc-400">
-              Row {activeQrTicket.rowLabel} — Seat #{activeQrTicket.seatNumber}
-            </p>
+            <div className="space-y-1 pt-1">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#D4FF00] block">
+                {activeQrTicket.isUsed ? 'Checked-In Pass' : 'Live Entry Token'}
+              </span>
+              <h3 className="font-display text-xl font-bold text-[#F4F4F0]">
+                {activeQrTicket.eventName}
+              </h3>
+              <p className="font-mono text-xs text-[#9E9EA8]">
+                Row {activeQrTicket.rowLabel} · Seat #{activeQrTicket.seatNumber} ({activeQrTicket.categoryName})
+              </p>
+            </div>
 
             {dynamicQrData ? (
-              <div className={`bg-white p-4 rounded-3xl inline-block shadow-2xl border-2 ${activeQrTicket.isUsed ? 'border-emerald-500' : 'border-indigo-500'}`}>
+              <div className="bg-white p-4 rounded-md inline-block border-2 border-[#D4FF00]">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dynamicQrData.qrPayload)}`}
-                  alt="Dynamic Anti-Fraud QR Code"
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                    dynamicQrData.qrPayload
+                  )}`}
+                  alt="Entry QR Code"
                   className="w-48 h-48"
                 />
               </div>
             ) : (
-              <div className="w-48 h-48 bg-[#131522] rounded-3xl mx-auto flex items-center justify-center text-zinc-400 text-xs font-semibold border border-white/10">
-                Generating Dynamic HMAC Token...
+              <div className="w-56 h-56 bg-[#0B0B0C] rounded-md mx-auto flex items-center justify-center font-mono text-xs text-[#9E9EA8] border border-[#242429]">
+                Generating token...
               </div>
             )}
 
             {!activeQrTicket.isUsed && (
-              <div className="flex items-center justify-center space-x-2 text-xs text-amber-400 font-bold">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Refreshes every 30s (Anti-Screenshot)</span>
+              <div className="flex items-center justify-center gap-2 font-mono text-[11px] text-[#D4FF00]">
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                <span>Rotates every 30s · Screenshots invalid</span>
               </div>
             )}
 
-            {activeQrTicket.isUsed && activeQrTicket.usedAt && (
-              <p className="text-xs font-bold text-emerald-400 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20">
-                ✓ Check-in Verified: {new Date(activeQrTicket.usedAt).toLocaleString()}
-              </p>
-            )}
-
-            <p className="font-mono text-[11px] text-zinc-400 break-all bg-[#131522] p-3 rounded-2xl border border-white/10">
-              {dynamicQrData ? dynamicQrData.qrPayload : activeQrTicket.ticketCode}
-            </p>
+            <button
+              type="button"
+              onClick={() =>
+                handleCopyPayload(dynamicQrData ? dynamicQrData.qrPayload : activeQrTicket.ticketCode)
+              }
+              className="w-full flex items-center justify-between gap-2 font-mono text-[11px] text-[#9E9EA8] hover:text-[#F4F4F0] bg-[#0B0B0C] px-3 py-2.5 rounded border border-[#242429] cursor-pointer"
+              title="Copy payload for Gate Scanner test"
+            >
+              <span className="truncate">
+                {dynamicQrData ? dynamicQrData.qrPayload : activeQrTicket.ticketCode}
+              </span>
+              {copiedToken ? (
+                <Check className="w-3.5 h-3.5 text-[#D4FF00] shrink-0" />
+              ) : (
+                <Copy className="w-3.5 h-3.5 text-[#666670] shrink-0" />
+              )}
+            </button>
           </div>
         </div>
       )}
 
-      {/* Transfer Ticket Modal */}
+      {/* P2P Pass Transfer Modal */}
       {transferTicketTarget && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-7 max-w-md w-full relative shadow-2xl space-y-5 text-left">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-7 max-w-md w-full relative shadow-2xl space-y-5 text-left">
             <button
               onClick={() => setTransferTicketTarget(null)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white p-1 rounded-xl hover:bg-white/10"
+              className="absolute top-4 right-4 text-[#666670] hover:text-[#F4F4F0] p-1 rounded hover:bg-[#1E1E22] cursor-pointer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
 
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-400 block mb-1">P2P Ticket Transfer</span>
-              <h3 className="text-2xl font-black text-white tracking-tight">Transfer Entry Pass</h3>
-              <p className="text-xs text-zinc-400 mt-1">
-                Transfer ownership of Row {transferTicketTarget.rowLabel} — Seat #{transferTicketTarget.seatNumber} ({transferTicketTarget.eventName}) to another user.
+            <div className="space-y-1">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#D4FF00] block">
+                Pass Transfer
+              </span>
+              <h3 className="font-display text-2xl font-bold text-[#F4F4F0]">Send Pass to Friend</h3>
+              <p className="text-xs text-[#9E9EA8]">
+                Transfer Row {transferTicketTarget.rowLabel} · Seat #{transferTicketTarget.seatNumber} for{' '}
+                <span className="text-[#F4F4F0] font-medium">{transferTicketTarget.eventName}</span>.
               </p>
             </div>
 
             <form onSubmit={handleTransferSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-2">Recipient Email</label>
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-2">
+                  Recipient Account Email
+                </label>
                 <input
                   type="email"
                   required
                   value={recipientEmail}
                   onChange={(e) => setRecipientEmail(e.target.value)}
-                  placeholder="e.g. friend@example.com"
-                  className="w-full bg-[#131522] border border-white/10 focus:border-indigo-500 rounded-2xl px-4 py-3 text-white text-sm outline-none"
+                  placeholder="friend@example.com"
+                  className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] rounded-md px-3.5 py-3 text-[#F4F4F0] text-sm outline-none transition-colors"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={transferring || !recipientEmail.trim()}
-                className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 text-sm"
               >
                 {transferring ? (
-                  <span>Transferring Ownership...</span>
+                  <span>Transferring...</span>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Confirm Transfer</span>
+                    <span>Transfer Ownership</span>
                   </>
                 )}
               </button>

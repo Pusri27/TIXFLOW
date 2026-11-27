@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, Mail, Lock, User, Phone, AlertCircle, Sparkles, ShieldCheck, Ticket, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, User, Phone, AlertCircle, ArrowRight } from 'lucide-react';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -23,131 +23,125 @@ export default function RegisterPage() {
       await register(name, email, password, phone);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Email address may already be registered.');
+      setError(err.response?.data?.message || 'Registration failed. Email may already be in use.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Left Hero Feature Panel */}
+    <div className="max-w-5xl mx-auto px-4 sm:px-8 py-12 sm:py-20">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        {/* Left Editorial Column */}
         <div className="lg:col-span-6 space-y-6">
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-300">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Join TIXFLOW Enterprise</span>
+          <div className="space-y-3">
+            <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] block">
+              Create Account
+            </span>
+            <h1 className="font-display text-3xl sm:text-5xl font-bold text-[#F4F4F0] leading-[1.05] tracking-tight">
+              Instant tickets. Zero scalper screenshots.
+            </h1>
+            <p className="text-[#9E9EA8] text-sm leading-relaxed">
+              Set up your pass wallet for live seat locking, Stripe checkout, rotating 30-second QR entry tokens, and peer-to-peer ticket transfers.
+            </p>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-            Create Your Digital Pass Account
-          </h1>
-
-          <p className="text-zinc-400 text-sm leading-relaxed">
-            Register to instantly unlock live seat reservations, dynamic TOTP QR code passes, Stripe checkout integration, and P2P ticket transfers.
-          </p>
-
-          <div className="space-y-3 pt-2 text-xs text-zinc-300 font-medium">
-            <div className="flex items-center space-x-3 bg-[#0d0e15] border border-white/[0.08] p-3.5 rounded-2xl">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Instant E-Ticket PDF downloads powered by Cloudinary</span>
+          <div className="border-t border-[#242429] pt-5 space-y-3 font-mono text-xs text-[#9E9EA8]">
+            <div className="flex items-center gap-3">
+              <span className="text-[#D4FF00]">01</span>
+              <span>10-minute exclusive seat holds at checkout</span>
             </div>
-            <div className="flex items-center space-x-3 bg-[#0d0e15] border border-white/[0.08] p-3.5 rounded-2xl">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Anti-fraud dynamic 30-second TOTP QR token protection</span>
+            <div className="flex items-center gap-3">
+              <span className="text-[#D4FF00]">02</span>
+              <span>Rotating TOTP QR passes + downloadable PDF stubs</span>
             </div>
-            <div className="flex items-center space-x-3 bg-[#0d0e15] border border-white/[0.08] p-3.5 rounded-2xl">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>P2P Ticket Pass transfers directly to any email address</span>
+            <div className="flex items-center gap-3">
+              <span className="text-[#D4FF00]">03</span>
+              <span>Instant pass transfers to any registered email</span>
             </div>
           </div>
         </div>
 
-        {/* Right Authentication Form Panel */}
+        {/* Right Registration Form */}
         <div className="lg:col-span-6">
-          <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-2xl">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                <UserPlus className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-white tracking-tight">Create Account</h2>
-                <p className="text-xs text-zinc-400">Fill in details to register</p>
-              </div>
+          <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-6">
+            <div>
+              <h2 className="font-display text-2xl font-bold text-[#F4F4F0]">Get Access</h2>
+              <p className="text-xs text-[#9E9EA8] mt-1">Create your TIXFLOW attendee profile.</p>
             </div>
 
             {error && (
-              <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs p-4 rounded-2xl mb-6 flex items-center space-x-3 font-semibold">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <div className="bg-red-500/10 border border-red-500/40 text-red-300 text-xs p-3.5 rounded-md flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
                 <span>{error}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-1.5">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-zinc-500 absolute left-4 top-3.5" />
+                  <User className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="John Doe"
-                    className="w-full bg-[#131522] border border-white/10 focus:border-indigo-500 text-white pl-11 pr-4 py-3 rounded-2xl text-sm outline-none transition-colors"
+                    placeholder="Alex Mercer"
+                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-2.5 rounded-md text-sm outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
-                  Email Address
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-1.5">
+                  Email
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-zinc-500 absolute left-4 top-3.5" />
+                  <Mail className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="john@example.com"
-                    className="w-full bg-[#131522] border border-white/10 focus:border-indigo-500 text-white pl-11 pr-4 py-3 rounded-2xl text-sm outline-none transition-colors"
+                    placeholder="alex@example.com"
+                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-2.5 rounded-md text-sm outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
-                  Phone / Mobile Number
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-1.5">
+                  Mobile Number <span className="text-[#666670]">(Optional)</span>
                 </label>
                 <div className="relative">
-                  <Phone className="w-4 h-4 text-zinc-500 absolute left-4 top-3.5" />
+                  <Phone className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+1 (555) 019-2834"
-                    className="w-full bg-[#131522] border border-white/10 focus:border-indigo-500 text-white pl-11 pr-4 py-3 rounded-2xl text-sm outline-none transition-colors"
+                    placeholder="+65 8123 4567"
+                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-2.5 rounded-md text-sm outline-none transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
+                <label className="block font-mono text-[11px] uppercase tracking-wider text-[#9E9EA8] mb-1.5">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-zinc-500 absolute left-4 top-3.5" />
+                  <Lock className="w-4 h-4 text-[#666670] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="password"
                     required
                     minLength={6}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="At least 6 characters"
-                    className="w-full bg-[#131522] border border-white/10 focus:border-indigo-500 text-white pl-11 pr-4 py-3 rounded-2xl text-sm outline-none transition-colors"
+                    placeholder="Minimum 6 characters"
+                    className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] pl-10 pr-4 py-2.5 rounded-md text-sm outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -155,17 +149,18 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-white hover:bg-zinc-200 text-black font-black rounded-2xl shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] mt-2 text-sm cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer disabled:opacity-50 mt-2"
               >
-                {loading ? 'Creating Your Account...' : 'Register Account'}
+                <span>{loading ? 'Creating Account...' : 'Create Account'}</span>
+                {!loading && <ArrowRight className="w-4 h-4" />}
               </button>
             </form>
 
-            <div className="border-t border-white/[0.08] pt-5 mt-5 text-center">
-              <p className="text-xs text-zinc-400">
-                Already have an account?{' '}
-                <Link to="/login" className="text-indigo-400 hover:underline font-bold">
-                  Sign In
+            <div className="border-t border-[#242429] pt-5 text-center">
+              <p className="text-xs text-[#9E9EA8]">
+                Already registered?{' '}
+                <Link to="/login" className="text-[#D4FF00] hover:underline font-semibold">
+                  Sign in
                 </Link>
               </p>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ShieldCheck, ShieldAlert, QrCode, CheckCircle2, UserCheck, ArrowLeft, ScanLine, Camera, CameraOff, Sparkles } from 'lucide-react';
+import { ShieldAlert, CheckCircle2, UserCheck, ArrowLeft, ScanLine, Camera, CameraOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { organizerApi } from '../services/api';
 
@@ -11,7 +11,6 @@ export default function GatekeeperScannerPage() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  // Attach camera stream to video element when isCameraActive turns true and element mounts
   useEffect(() => {
     if (isCameraActive && streamRef.current && videoRef.current) {
       videoRef.current.srcObject = streamRef.current;
@@ -19,7 +18,6 @@ export default function GatekeeperScannerPage() {
     }
   }, [isCameraActive]);
 
-  // Clean up camera stream on unmount
   useEffect(() => {
     return () => {
       stopCamera();
@@ -32,17 +30,15 @@ export default function GatekeeperScannerPage() {
       let stream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' }
+          video: { facingMode: 'environment' },
         });
       } catch (_) {
-        // Fallback for laptop / desktop webcams
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
       }
 
       streamRef.current = stream;
       setIsCameraActive(true);
 
-      // Attempt native BarcodeDetector if supported by browser
       if ('BarcodeDetector' in window) {
         const barcodeDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
         const interval = setInterval(async () => {
@@ -61,7 +57,10 @@ export default function GatekeeperScannerPage() {
         }, 500);
       }
     } catch (err) {
-      alert('Camera access issue: ' + err.message + '. Please check camera permissions in your browser or enter the pass token manually.');
+      setScanResult({
+        success: false,
+        message: `Camera unavailable (${err.message}). Paste or type the rotating pass token below.`,
+      });
       setIsCameraActive(false);
     }
   };
@@ -89,7 +88,7 @@ export default function GatekeeperScannerPage() {
     } catch (err) {
       setScanResult({
         success: false,
-        message: err.response?.data?.message || err.message || 'Failed to verify QR Payload',
+        message: err.response?.data?.message || err.message || 'Invalid or expired QR token.',
       });
     } finally {
       setLoading(false);
@@ -102,123 +101,138 @@ export default function GatekeeperScannerPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <div className="flex items-center justify-between mb-8">
-        <Link to="/" className="flex items-center space-x-2 text-zinc-400 hover:text-white transition-colors text-sm font-bold">
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Home</span>
+    <div className="max-w-2xl mx-auto px-4 sm:px-8 py-10 sm:py-12 space-y-8">
+      <div className="flex items-center justify-between">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#9E9EA8] hover:text-[#D4FF00] transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>All Events</span>
         </Link>
-        <span className="text-xs font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full font-bold">
-          Gatekeeper App
+        <span className="font-mono text-[11px] uppercase tracking-wider text-[#D4FF00] bg-[#121214] border border-[#242429] px-2.5 py-1 rounded">
+          Door Control
         </span>
       </div>
 
-      <div className="bg-[#0d0e15] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8">
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-indigo-500/20">
-            <ScanLine className="w-8 h-8 text-white" />
+      <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 space-y-6">
+        <div className="flex items-start justify-between gap-4 border-b border-[#242429] pb-5">
+          <div>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0]">
+              Gate Pass Scanner
+            </h1>
+            <p className="text-xs text-[#9E9EA8] mt-1">
+              Scan attendee QR passes via camera or verify a rotating HMAC token string directly.
+            </p>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Gatekeeper QR Scanner</h1>
-          <p className="text-zinc-400 text-xs font-medium max-w-md mx-auto">
-            Scan physical or digital dynamic TOTP QR code passes for immediate venue gate validation.
-          </p>
+          <div className="w-10 h-10 rounded-md bg-[#D4FF00] text-[#0B0B0C] flex items-center justify-center shrink-0">
+            <ScanLine className="w-5 h-5" />
+          </div>
         </div>
 
-        {/* Live Camera Viewfinder Box */}
-        <div className="bg-[#131522] border border-white/10 rounded-3xl p-6 text-center space-y-4">
+        {/* Camera Viewfinder */}
+        <div className="bg-[#0B0B0C] border border-[#242429] rounded-md p-6 text-center">
           {isCameraActive ? (
-            <div className="relative max-w-sm mx-auto aspect-square rounded-2xl overflow-hidden bg-black border-2 border-indigo-500/50 shadow-2xl">
+            <div className="relative max-w-xs mx-auto aspect-square rounded-md overflow-hidden bg-black border border-[#D4FF00]">
               <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-              <div className="absolute inset-0 border-2 border-dashed border-indigo-400/60 m-8 rounded-xl pointer-events-none animate-pulse" />
+              <div className="absolute inset-0 border border-dashed border-[#D4FF00]/70 m-6 rounded pointer-events-none" />
               <button
                 type="button"
                 onClick={stopCamera}
-                className="absolute top-3 right-3 bg-rose-500/80 hover:bg-rose-500 text-white p-2 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
+                className="absolute top-2.5 right-2.5 bg-[#0B0B0C]/90 hover:bg-[#121214] border border-[#242429] text-[#F4F4F0] px-2.5 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5"
               >
-                <CameraOff className="w-4 h-4" />
-                <span>Close Camera</span>
+                <CameraOff className="w-3.5 h-3.5 text-red-400" />
+                <span>Stop</span>
               </button>
             </div>
           ) : (
-            <div className="py-6 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto">
-                <Camera className="w-8 h-8" />
+            <div className="py-4 space-y-3">
+              <div className="w-11 h-11 rounded-md bg-[#121214] border border-[#242429] text-[#D4FF00] flex items-center justify-center mx-auto">
+                <Camera className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">Live Camera Scanner</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">Use device camera to automatically scan attendee QR pass</p>
+                <h3 className="text-sm font-semibold text-[#F4F4F0]">Optical QR Reader</h3>
+                <p className="text-xs text-[#666670] mt-0.5">
+                  Point device camera at attendee mobile pass
+                </p>
               </div>
               <button
                 type="button"
                 onClick={startCamera}
-                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-2xl shadow-lg transition-all cursor-pointer inline-flex items-center space-x-2"
+                className="px-4 py-2.5 bg-[#17171A] hover:bg-[#1E1E22] border border-[#242429] text-[#F4F4F0] font-semibold text-xs rounded-md transition-colors cursor-pointer inline-flex items-center gap-2"
               >
-                <Camera className="w-4 h-4" />
-                <span>Activate Camera Scanner</span>
+                <Camera className="w-3.5 h-3.5 text-[#D4FF00]" />
+                <span>Open Camera</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Manual Payload / Token Verification Input */}
+        {/* Manual Token Verification */}
         <form onSubmit={handleManualSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
-              Dynamic QR Payload / Pass Token Input
+            <label className="block font-mono text-[11px] text-[#9E9EA8] uppercase tracking-wider mb-2">
+              Pass Token / QR Payload
             </label>
             <input
               type="text"
               value={qrInput}
               onChange={(e) => setQrInput(e.target.value)}
-              placeholder="e.g. TIX-A1B2C3:5912384:sIgNaTuRe..."
-              className="w-full bg-[#131522] border border-white/10 text-white font-mono text-sm px-4 py-3.5 rounded-2xl focus:border-indigo-500 focus:outline-none transition-colors"
+              placeholder="TIX-A1B2C3:5912384:signature..."
+              className="w-full bg-[#0B0B0C] border border-[#242429] focus:border-[#D4FF00] text-[#F4F4F0] font-mono text-xs px-3.5 py-3 rounded-md outline-none transition-colors"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading || !qrInput.trim()}
-            className="w-full py-4 bg-white hover:bg-zinc-200 text-black font-black rounded-2xl shadow-xl transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
+            className="w-full py-3.5 bg-[#D4FF00] hover:bg-[#E2FF4D] text-[#0B0B0C] font-bold rounded-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 text-sm"
           >
             {loading ? (
-              <span>Validating Dynamic Token...</span>
+              <span>Verifying Token...</span>
             ) : (
               <>
-                <UserCheck className="w-5 h-5" />
-                <span>Verify Attendee Pass</span>
+                <UserCheck className="w-4 h-4" />
+                <span>Verify &amp; Check In</span>
               </>
             )}
           </button>
         </form>
 
-        {/* Scan Result Feedback Banner */}
+        {/* Verification Result */}
         {scanResult && (
           <div
-            className={`p-6 rounded-2xl border text-left ${
+            className={`p-5 rounded-md border text-left ${
               scanResult.success
-                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
-                : 'bg-rose-500/10 border-rose-500/40 text-rose-300'
+                ? 'bg-emerald-500/10 border-emerald-500/40'
+                : 'bg-red-500/10 border-red-500/40'
             }`}
           >
-            <div className="flex items-start space-x-3">
+            <div className="flex items-start gap-3">
               {scanResult.success ? (
-                <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-[#D4FF00] shrink-0 mt-0.5" />
               ) : (
-                <ShieldAlert className="w-6 h-6 text-rose-400 shrink-0 mt-0.5" />
+                <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
               )}
-              <div className="space-y-1">
-                <p className="font-black text-base tracking-tight">
-                  {scanResult.success ? scanResult.data.message : 'ACCESS DENIED / INVALID PASS'}
+              <div className="space-y-2 flex-1">
+                <p className="font-mono text-xs font-bold uppercase tracking-wider text-[#F4F4F0]">
+                  {scanResult.success ? scanResult.data.message || 'ADMIT — VALID PASS' : 'ENTRY DENIED'}
                 </p>
 
                 {scanResult.success ? (
-                  <div className="text-xs space-y-1 text-zinc-300 pt-2 border-t border-emerald-500/20 mt-2 font-medium">
-                    <p><span className="text-zinc-400">Attendee Name:</span> <strong className="text-white">{scanResult.data.attendeeName}</strong></p>
-                    <p><span className="text-zinc-400">Event Title:</span> <strong className="text-white">{scanResult.data.eventName}</strong></p>
-                    <p><span className="text-zinc-400">Seat Assignment:</span> <strong className="text-emerald-400">{scanResult.data.seatInfo}</strong></p>
+                  <div className="font-mono text-xs space-y-1 text-[#9E9EA8] pt-2 border-t border-white/10">
+                    <p>
+                      Holder: <strong className="text-[#F4F4F0]">{scanResult.data.attendeeName}</strong>
+                    </p>
+                    <p>
+                      Event: <strong className="text-[#F4F4F0]">{scanResult.data.eventName}</strong>
+                    </p>
+                    <p>
+                      Seat: <strong className="text-[#D4FF00]">{scanResult.data.seatInfo}</strong>
+                    </p>
                   </div>
                 ) : (
-                  <p className="text-xs text-rose-300/80 font-medium">{scanResult.message}</p>
+                  <p className="text-xs text-red-300">{scanResult.message}</p>
                 )}
               </div>
             </div>

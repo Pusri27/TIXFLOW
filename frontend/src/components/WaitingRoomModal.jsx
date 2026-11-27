@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, ShieldCheck, Users, Sparkles } from 'lucide-react';
+import { Clock, CheckCircle2, Users, X } from 'lucide-react';
 import { queueApi } from '../services/api';
 
 export default function WaitingRoomModal({ eventId, onTokenGranted, onClose }) {
@@ -39,54 +39,69 @@ export default function WaitingRoomModal({ eventId, onTokenGranted, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl text-center relative overflow-hidden">
-        {/* Glowing Background Pulse */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl" />
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-[#121214] border border-[#242429] rounded-lg p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-[#666670] hover:text-[#F4F4F0] p-1 rounded hover:bg-[#1E1E22] cursor-pointer"
+          aria-label="Close queue modal"
+        >
+          <X className="w-4 h-4" />
+        </button>
 
-        <div className="relative z-10">
-          <div className="w-16 h-16 bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20">
-            <Users className="w-8 h-8 animate-pulse" />
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[#D4FF00]">
+              <Users className="w-3.5 h-3.5" />
+              <span>Virtual Waiting Room</span>
+            </span>
+            <h3 className="font-display text-2xl font-bold text-[#F4F4F0]">High-Demand Queue</h3>
+            <p className="text-xs text-[#9E9EA8] leading-relaxed">
+              Entry is metered automatically to prevent double-booking during peak ticket drops.
+            </p>
           </div>
 
-          <h3 className="text-2xl font-black text-white mb-2 flex items-center justify-center gap-2">
-            <span>Ruang Antrean War Ticket</span>
-            <Sparkles className="w-5 h-5 text-amber-400" />
-          </h3>
-          <p className="text-xs text-slate-400 mb-6">
-            Sistem membatasi traffic transaksi secara bertahap demi stabilitas database.
-          </p>
-
           {loading || !status ? (
-            <div className="py-8 text-slate-400 text-sm">Menghubungkan ke server antrean...</div>
+            <div className="py-8 text-center border border-[#242429] bg-[#0B0B0C] rounded-md">
+              <div className="w-6 h-6 border-2 border-[#242429] border-t-[#D4FF00] rounded-full animate-spin mx-auto mb-2.5" />
+              <span className="font-mono text-xs text-[#9E9EA8]">Assigning queue position...</span>
+            </div>
           ) : status.status === 'SERVING' ? (
-            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 mb-6">
-              <ShieldCheck className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
-              <p className="text-emerald-300 font-bold text-lg">Giliran Anda Tiba!</p>
-              <p className="text-xs text-slate-300 mt-1">
-                Token akses tiket Anda telah diterbitkan. Membuka pemilihan kursi...
+            <div className="bg-[#17171A] border border-[#D4FF00]/50 rounded-md p-5 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#D4FF00] mx-auto" />
+              <p className="font-display text-lg font-bold text-[#F4F4F0]">You&apos;re In</p>
+              <p className="text-xs text-[#9E9EA8]">
+                Access token verified. Opening live seat selection...
               </p>
             </div>
           ) : (
-            <div className="space-y-4 mb-6">
-              <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Posisi Antrean Anda</p>
-                <p className="text-4xl font-black text-blue-400 font-mono">#{status.position}</p>
+            <div className="space-y-3">
+              <div className="bg-[#0B0B0C] p-5 rounded-md border border-[#242429] flex items-baseline justify-between">
+                <span className="font-mono text-xs uppercase tracking-wider text-[#9E9EA8]">
+                  Queue Position
+                </span>
+                <span className="font-mono text-3xl font-bold text-[#D4FF00]">
+                  #{status.position}
+                </span>
               </div>
 
-              <div className="flex items-center justify-center space-x-2 text-xs text-slate-400 bg-slate-950/60 py-3 rounded-xl border border-slate-800">
-                <Clock className="w-4 h-4 text-amber-400" />
-                <span>Estimasi Waktu Tunggu: ~{status.estimatedWaitSeconds} detik</span>
+              <div className="flex items-center justify-between text-xs text-[#9E9EA8] bg-[#17171A] px-4 py-3 rounded-md border border-[#242429]">
+                <span className="flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-[#D4FF00]" />
+                  <span>Estimated wait</span>
+                </span>
+                <span className="font-mono font-semibold text-[#F4F4F0]">
+                  ~{status.estimatedWaitSeconds}s
+                </span>
               </div>
             </div>
           )}
 
           <button
             onClick={onClose}
-            className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-sm transition-colors"
+            className="w-full py-2.5 bg-[#17171A] hover:bg-[#1E1E22] border border-[#242429] text-[#9E9EA8] hover:text-[#F4F4F0] font-semibold rounded-md text-xs transition-colors cursor-pointer"
           >
-            Batal & Keluar Antrean
+            Leave Queue
           </button>
         </div>
       </div>
