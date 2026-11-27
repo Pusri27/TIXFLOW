@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { bookingApi } from '../services/api';
 import { useToast } from '../context/ToastContext';
+import { formatPrice } from '../utils/formatPrice';
 import { Clock, CreditCard, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Copy, Check } from 'lucide-react';
 
 const TEST_CARDS = [
@@ -225,7 +226,7 @@ export default function CheckoutPage() {
                         <span className="text-[#F4F4F0] font-medium">{item.categoryName}</span>
                       </div>
                       <span className="font-mono font-semibold text-[#F4F4F0]">
-                        ${item.price?.toLocaleString('en-US')}
+                        {formatPrice(item.price)}
                       </span>
                     </div>
                   ))}
@@ -236,8 +237,8 @@ export default function CheckoutPage() {
                 <span className="font-mono text-xs uppercase tracking-wider text-[#9E9EA8]">
                   Total Due
                 </span>
-                <span className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
-                  ${booking.totalAmount?.toLocaleString('en-US')}
+                <span className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] tabular-nums">
+                  {formatPrice(booking.totalAmount)}
                 </span>
               </div>
 
@@ -254,7 +255,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4" />
-                    <span>Pay ${booking.totalAmount?.toLocaleString('en-US')} with Stripe</span>
+                    <span>Pay {formatPrice(booking.totalAmount)} with Stripe</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -335,7 +336,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between pt-2 border-t border-[#242429]">
               <span className="text-[#666670]">Amount Paid</span>
-              <span className="text-[#F4F4F0] font-bold">${booking.totalAmount?.toLocaleString('en-US')}</span>
+              <span className="text-[#F4F4F0] font-bold">{formatPrice(booking.totalAmount)}</span>
             </div>
           </div>
 

@@ -18,8 +18,8 @@ export default function CreateEventPage() {
     posterUrl: FALLBACK_POSTER,
     startTime: '',
     endTime: '',
-    vipPrice: '250',
-    regularPrice: '120',
+    vipPrice: '1500000',
+    regularPrice: '750000',
     isQueueEnabled: true,
     dynamicPricingEnabled: false,
   });
@@ -87,7 +87,7 @@ export default function CreateEventPage() {
           Publish Event
         </h1>
         <p className="text-[#9E9EA8] text-xs sm:text-sm mt-1">
-          Configure event listing, artwork, schedule, and USD seat pricing tiers.
+          Configure event listing, artwork, schedule, and IDR seat pricing tiers.
         </p>
       </div>
 
@@ -201,11 +201,11 @@ export default function CreateEventPage() {
           </div>
         </div>
 
-        {/* Pricing Tiers (USD) */}
+        {/* Pricing Tiers (IDR) */}
         <div className="p-5 rounded-md bg-[#0B0B0C] border border-[#242429] space-y-4">
           <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-[#F4F4F0] flex items-center gap-1.5">
             <DollarSign className="w-3.5 h-3.5 text-[#D4FF00]" />
-            <span>Seat Tier Pricing (USD)</span>
+            <span>Seat Tier Pricing (IDR)</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

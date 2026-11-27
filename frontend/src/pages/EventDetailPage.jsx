@@ -4,6 +4,7 @@ import { eventApi, bookingApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SeatMap from '../components/SeatMap';
 import WaitingRoomModal from '../components/WaitingRoomModal';
+import { formatPrice } from '../utils/formatPrice';
 import { Calendar, MapPin, AlertCircle, Users, ArrowLeft, ArrowRight, X } from 'lucide-react';
 
 const FALLBACK_POSTER =
@@ -260,7 +261,7 @@ export default function EventDetailPage() {
 
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-semibold text-[#F4F4F0]">
-                        ${seat.price.toLocaleString('en-US')}
+                        {formatPrice(seat.price)}
                       </span>
                       <button
                         onClick={() => handleToggleSeat(seat.id)}
@@ -280,8 +281,8 @@ export default function EventDetailPage() {
                 <span className="font-mono text-xs uppercase tracking-wider text-[#9E9EA8]">
                   Total
                 </span>
-                <span className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
-                  ${totalAmount.toLocaleString('en-US')}
+                <span className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] tabular-nums">
+                  {formatPrice(totalAmount)}
                 </span>
               </div>
 

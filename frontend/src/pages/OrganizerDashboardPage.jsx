@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Users, DollarSign, UserCheck, ArrowLeft, PieChart, ChevronDown } from 'lucide-react';
 import { organizerApi, eventApi } from '../services/api';
+import { formatCompactPrice } from '../utils/formatPrice';
 
 export default function OrganizerDashboardPage() {
   const { id } = useParams();
@@ -135,8 +136,11 @@ export default function OrganizerDashboardPage() {
                 </span>
                 <DollarSign className="w-4 h-4 text-[#D4FF00]" />
               </div>
-              <p className="font-display text-3xl font-bold text-[#F4F4F0] tabular-nums">
-                ${(analytics.totalRevenue || 0).toLocaleString('en-US')}
+              <p
+                className="font-display text-2xl sm:text-3xl font-bold text-[#F4F4F0] tabular-nums"
+                title={`IDR ${(analytics.totalRevenue || 0).toLocaleString('en-US')}`}
+              >
+                {formatCompactPrice(analytics.totalRevenue || 0)}
               </p>
               <span className="font-mono text-[11px] text-[#D4FF00] block">Confirmed orders</span>
             </div>

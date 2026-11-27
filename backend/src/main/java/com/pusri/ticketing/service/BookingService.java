@@ -144,9 +144,11 @@ public class BookingService {
         try {
             if (stripeSecretKey != null && !stripeSecretKey.startsWith("sk_test_mock")) {
                 com.stripe.Stripe.apiKey = stripeSecretKey;
+                long rawTotal = booking.getTotalAmount().longValue();
+                String stripeCurrency = rawTotal >= 10000L ? "idr" : "usd";
                 com.stripe.param.PaymentIntentCreateParams params = com.stripe.param.PaymentIntentCreateParams.builder()
-                        .setAmount(booking.getTotalAmount().longValue() * 100) // amount in USD cents
-                        .setCurrency("usd")
+                        .setAmount(rawTotal * 100L)
+                        .setCurrency(stripeCurrency)
                         .setDescription("Ticket Booking: " + booking.getEvent().getName() + " (" + booking.getBookingCode() + ")")
                         .putMetadata("bookingCode", booking.getBookingCode())
                         .putMetadata("userEmail", userEmail)
@@ -220,8 +222,8 @@ public class BookingService {
                                     .setQuantity(1L)
                                     .setPriceData(
                                             com.stripe.param.checkout.SessionCreateParams.LineItem.PriceData.builder()
-                                                    .setCurrency("usd")
-                                                    .setUnitAmount(booking.getTotalAmount().longValue() * 100)
+                                                    .setCurrency(booking.getTotalAmount().longValue() >= 10000L ? "idr" : "usd")
+                                                    .setUnitAmount(booking.getTotalAmount().longValue() * 100L)
                                                     .setProductData(
                                                             com.stripe.param.checkout.SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                                     .setName("Event Ticket Pass: " + booking.getEvent().getName())

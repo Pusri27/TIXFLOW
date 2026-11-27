@@ -20,20 +20,24 @@ public class QueueController {
 
     @PostMapping("/join/{eventId}")
     public ResponseEntity<Map<String, Object>> joinQueue(@PathVariable Long eventId, Authentication authentication) {
-        User user = getUser(authentication);
-        Map<String, Object> status = queueService.joinQueue(eventId, user.getId());
+        Long userId = resolveUserId(authentication);
+        Map<String, Object> status = queueService.joinQueue(eventId, userId);
         return ResponseEntity.ok(status);
     }
 
     @GetMapping("/status/{eventId}")
     public ResponseEntity<Map<String, Object>> getStatus(@PathVariable Long eventId, Authentication authentication) {
-        User user = getUser(authentication);
-        Map<String, Object> status = queueService.getQueueStatus(eventId, user.getId());
+        Long userId = resolveUserId(authentication);
+        Map<String, Object> status = queueService.getQueueStatus(eventId, userId);
         return ResponseEntity.ok(status);
     }
 
-    private User getUser(Authentication authentication) {
+    private Long resolveUserId(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null || "anonymousUser".equals(authentication.getName())) {
+            return 999999L;
+        }
         return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new IllegalArgumentException("User tidak ditemukan"));
+                .map(User::getId)
+                .orElse(999999L);
     }
 }

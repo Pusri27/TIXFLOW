@@ -1,5 +1,6 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
+import { formatPrice, formatCompactPrice } from '../utils/formatPrice';
 
 export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
   if (!seatMap || !seatMap.seats) {
@@ -95,7 +96,7 @@ export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
                           seat
                         )}`}
                         title={`Row ${seat.rowLabel} Seat ${seat.seatNumber}${
-                          cat ? ` · ${cat.name} ($${cat.price})` : ''
+                          cat ? ` · ${cat.name} (${formatPrice(cat.price)})` : ''
                         } (${seat.status})`}
                       >
                         {seat.status === 'BOOKED' ? (
@@ -111,10 +112,10 @@ export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
                 </div>
 
                 <span
-                  className="w-10 text-left font-mono text-[10px] text-[#666670] hidden sm:inline truncate"
+                  className="w-16 text-left font-mono text-[10px] text-[#666670] hidden sm:inline whitespace-nowrap"
                   title={firstCat?.name}
                 >
-                  {firstCat ? `$${firstCat.price}` : rowLabel}
+                  {firstCat ? formatCompactPrice(firstCat.price) : rowLabel}
                 </span>
               </div>
             );
@@ -132,7 +133,7 @@ export default function SeatMap({ seatMap, selectedSeatIds, onToggleSeat }) {
                 style={{ backgroundColor: cat.colorCode || '#9E9EA8' }}
               />
               <span className="text-[#F4F4F0] font-medium">{cat.name}</span>
-              <span className="font-mono text-[#9E9EA8]">${cat.price.toLocaleString('en-US')}</span>
+              <span className="font-mono text-[#9E9EA8]">{formatPrice(cat.price)}</span>
             </div>
           ))}
         </div>
