@@ -32,12 +32,12 @@ public class EventService {
         if (category != null && !category.isEmpty()) {
             try {
                 EventCategory cat = EventCategory.valueOf(category.toUpperCase());
-                events = eventRepository.findByCategory(cat);
+                events = eventRepository.findByCategoryOrderByStartTimeAsc(cat);
             } catch (Exception e) {
-                events = eventRepository.findAll();
+                events = eventRepository.findAllByOrderByStartTimeAsc();
             }
         } else {
-            events = eventRepository.findAll();
+            events = eventRepository.findAllByOrderByStartTimeAsc();
         }
 
         return events.stream().map(this::mapToEventResponse).collect(Collectors.toList());
@@ -136,12 +136,13 @@ public class EventService {
                         .build()
         );
 
-        // Auto-generate 24 seats (Rows A, B for VIP; Rows C, D for Regular)
+        // Auto-generate 24 seats (Rows A, B for VIP; Rows C, D for Regular) in a single batch save
         String[] rows = {"A", "B", "C", "D"};
+        java.util.List<Seat> seatsBatch = new java.util.ArrayList<>(24);
         for (String row : rows) {
             com.pusri.ticketing.entity.SeatCategory category = (row.equals("A") || row.equals("B")) ? vipCat : regCat;
             for (int num = 1; num <= 6; num++) {
-                seatRepository.save(
+                seatsBatch.add(
                         Seat.builder()
                                 .event(saved)
                                 .category(category)
@@ -152,6 +153,7 @@ public class EventService {
                 );
             }
         }
+        seatRepository.saveAll(seatsBatch);
 
         return mapToEventResponse(saved);
     }
@@ -170,6 +172,9 @@ public class EventService {
             try {
                 event.setCategory(EventCategory.valueOf(req.getCategory().toUpperCase()));
             } catch (Exception ignored) {}
+        }
+        if (req.getVenueId() != null) {
+            venueRepository.findById(req.getVenueId()).ifPresent(event::setVenue);
         }
         if (req.getIsQueueEnabled() != null) event.setIsQueueEnabled(req.getIsQueueEnabled());
         if (req.getDynamicPricingEnabled() != null) event.setDynamicPricingEnabled(req.getDynamicPricingEnabled());

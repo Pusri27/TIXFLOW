@@ -94,15 +94,15 @@ export default function OrganizerDashboardPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-4 border-t border-[#F1F3F7]">
-          {eventsList.map((evt) => (
+        <div className="flex items-center gap-2 pt-4 border-t border-[#F1F3F7] overflow-x-auto scrollbar-none pb-1">
+          {eventsList.slice(0, 8).map((evt) => (
             <button
               key={evt.id}
               onClick={() => {
                 setSelectedEventId(evt.id);
                 navigate(`/organizer/analytics/${evt.id}`);
               }}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer truncate max-w-[210px] ${
+              className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer truncate max-w-[210px] ${
                 selectedEventId === evt.id
                   ? 'bg-[#111827] text-white shadow-xs'
                   : 'bg-[#F7F8FA] text-[#4B5563] hover:text-[#111827] border border-[#E6E8EC]'

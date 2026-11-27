@@ -23,9 +23,11 @@ export default function EventListPage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(9);
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
+    setVisibleCount(9);
     fetchEvents();
   }, [selectedCategory]);
 
@@ -85,6 +87,8 @@ export default function EventListPage() {
   );
 
   const featuredEvent = !selectedCategory && !searchQuery && events.length > 0 ? events[0] : null;
+  const displayedEvents = searchQuery ? filteredEvents : filteredEvents.slice(0, visibleCount);
+  const hasMoreEvents = !searchQuery && filteredEvents.length > visibleCount;
 
   const formatDateBadge = (dateString) => {
     if (!dateString) return { month: 'TBA', day: '--' };
@@ -166,6 +170,8 @@ export default function EventListPage() {
               <img
                 src={featuredEvent.posterUrl || FALLBACK_POSTER}
                 alt={featuredEvent.name}
+                fetchPriority="high"
+                decoding="async"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = FALLBACK_POSTER;
@@ -181,9 +187,16 @@ export default function EventListPage() {
       <section className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827]">
-              Upcoming Events
-            </h2>
+            <div className="flex items-center gap-2.5">
+              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#111827]">
+                Upcoming Events
+              </h2>
+              {!loading && filteredEvents.length > 0 && (
+                <span className="text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3 py-1 rounded-full">
+                  {filteredEvents.length} events
+                </span>
+              )}
+            </div>
             <p className="text-[#6B7280] text-sm mt-1">
               Book verified seats for live music tours, international matches, and theater shows.
             </p>
@@ -262,8 +275,9 @@ export default function EventListPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-            {filteredEvents.map((event) => {
+          <div className="space-y-8 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedEvents.map((event) => {
               const dateInfo = formatDateBadge(event.startTime);
               return (
                 <article
@@ -299,6 +313,8 @@ export default function EventListPage() {
                     <img
                       src={event.posterUrl || FALLBACK_POSTER}
                       alt={event.name}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = FALLBACK_POSTER;
@@ -365,7 +381,21 @@ export default function EventListPage() {
                   </div>
                 </article>
               );
-            })}
+              })}
+            </div>
+
+            {hasMoreEvents && (
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((prev) => prev + 12)}
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white hover:bg-[#FFF1F2] border border-[#E6E8EC] hover:border-rose-200 text-sm font-bold text-[#111827] hover:text-[#E11D48] shadow-xs transition-all cursor-pointer"
+                >
+                  <span>Show More Events ({filteredEvents.length - visibleCount} remaining)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </section>

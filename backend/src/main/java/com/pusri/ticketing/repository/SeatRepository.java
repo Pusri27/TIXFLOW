@@ -2,6 +2,7 @@ package com.pusri.ticketing.repository;
 
 import com.pusri.ticketing.entity.Seat;
 import com.pusri.ticketing.entity.SeatStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @Repository
 public interface SeatRepository extends JpaRepository<Seat, Long> {
 
+    @EntityGraph(attributePaths = {"category"})
     List<Seat> findByEventIdOrderByRowLabelAscSeatNumberAsc(Long eventId);
 
     // Pessimistic Write Lock for Race Condition Prevention
