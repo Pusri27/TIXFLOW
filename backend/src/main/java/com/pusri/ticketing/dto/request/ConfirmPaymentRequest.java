@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class ConfirmPaymentRequest {
 
-    @NotBlank(message = "Method pembayaran wajib diisi")
+    @NotBlank(message = "Payment method is required.")
     private String paymentMethod = "STRIPE";
 
     private String stripePaymentIntentId;

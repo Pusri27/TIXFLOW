@@ -7,10 +7,10 @@ import { formatPrice } from '../utils/formatPrice';
 import { Clock, CreditCard, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, Copy, Check, XCircle } from 'lucide-react';
 
 const TEST_CARDS = [
-  { label: 'Visa — Instant Approval', note: 'Payment succeeds', number: '4242 4242 4242 4242', tone: 'text-emerald-600' },
-  { label: 'Mastercard — Approval', note: 'Payment succeeds', number: '5555 5555 5555 4444', tone: 'text-emerald-600' },
-  { label: '3D Secure OTP Card', note: 'Triggers OTP check', number: '4000 0000 0000 3020', tone: 'text-amber-600' },
-  { label: 'Declined Test Card', note: 'Bank decline test', number: '4000 0000 0000 0002', tone: 'text-rose-600' },
+  { label: 'Visa (Success)', note: 'Instant approval', number: '4242 4242 4242 4242', tone: 'text-emerald-600' },
+  { label: 'Mastercard (Success)', note: 'Instant approval', number: '5555 5555 5555 4444', tone: 'text-emerald-600' },
+  { label: '3D Secure Card', note: 'Triggers OTP check', number: '4000 0000 0000 3020', tone: 'text-amber-600' },
+  { label: 'Declined Card', note: 'Bank decline test', number: '4000 0000 0000 0002', tone: 'text-rose-600' },
 ];
 
 export default function CheckoutPage() {

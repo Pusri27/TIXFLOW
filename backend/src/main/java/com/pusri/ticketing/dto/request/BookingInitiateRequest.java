@@ -9,9 +9,9 @@ import java.util.List;
 @Data
 public class BookingInitiateRequest {
 
-    @NotNull(message = "Event ID wajib diisi")
+    @NotNull(message = "Event ID is required.")
     private Long eventId;
 
-    @NotEmpty(message = "Pilih minimal 1 kursi")
+    @NotEmpty(message = "Please select at least one seat.")
     private List<Long> seatIds;
 }

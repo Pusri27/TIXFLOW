@@ -24,6 +24,8 @@ export default function EventListPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(9);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
@@ -44,22 +46,24 @@ export default function EventListPage() {
     }
   };
 
-  const handleDeleteEvent = async (e, eventId, eventName) => {
+  const handleDeleteEvent = (e, eventId, eventName) => {
     e.preventDefault();
     e.stopPropagation();
+    setDeleteTarget({ id: eventId, name: eventName });
+  };
 
-    if (!window.confirm(`Delete "${eventName}" permanently?`)) {
-      return;
-    }
-
+  const confirmDeleteEvent = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await adminApi.deleteEvent(eventId);
-      setEvents((prev) => prev.filter((item) => item.id !== eventId));
+      await adminApi.deleteEvent(deleteTarget.id);
+      setEvents((prev) => prev.filter((item) => item.id !== deleteTarget.id));
       showToast({
         type: 'success',
         title: 'Event Removed',
-        message: `"${eventName}" has been deleted.`,
+        message: `"${deleteTarget.name}" has been deleted.`,
       });
+      setDeleteTarget(null);
     } catch (err) {
       console.error(err);
       showToast({
@@ -67,6 +71,9 @@ export default function EventListPage() {
         title: 'Delete Failed',
         message: err.response?.data?.message || err.message,
       });
+      setDeleteTarget(null);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -397,6 +404,54 @@ export default function EventListPage() {
           </div>
         )}
       </section>
+
+      {/* Custom In-App Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div
+          onClick={() => !deleting && setDeleteTarget(null)}
+          className="fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Confirm event deletion"
+            className="bg-white border border-[#E6E8EC] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5"
+          >
+            <div className="space-y-2">
+              <span className="inline-block text-xs font-bold text-[#E11D48] bg-[#FFF1F2] px-3 py-1 rounded-full">
+                Confirm Removal
+              </span>
+              <h3 className="font-display text-2xl font-extrabold text-[#111827]">
+                Delete this event?
+              </h3>
+              <p className="text-sm text-[#6B7280] leading-relaxed">
+                Are you sure you want to permanently remove{' '}
+                <strong className="text-[#111827]">&ldquo;{deleteTarget.name}&rdquo;</strong> from the catalog?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setDeleteTarget(null)}
+                className="py-3 rounded-full bg-[#F1F3F7] hover:bg-[#E5E7EB] text-[#374151] text-sm font-bold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={confirmDeleteEvent}
+                className="py-3 rounded-full bg-[#E11D48] hover:bg-[#BE123C] text-white text-sm font-bold shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete Event'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

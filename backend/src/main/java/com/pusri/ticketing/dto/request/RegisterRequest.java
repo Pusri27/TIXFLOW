@@ -9,15 +9,15 @@ import javax.validation.constraints.Size;
 @Data
 public class RegisterRequest {
 
-    @NotBlank(message = "Nama wajib diisi")
+    @NotBlank(message = "Full name is required.")
     private String name;
 
-    @NotBlank(message = "Email wajib diisi")
-    @Email(message = "Format email tidak valid")
+    @NotBlank(message = "Email address is required.")
+    @Email(message = "Please enter a valid email address.")
     private String email;
 
-    @NotBlank(message = "Password wajib diisi")
-    @Size(min = 6, message = "Password minimal 6 karakter")
+    @NotBlank(message = "Password is required.")
+    @Size(min = 6, message = "Password must be at least 6 characters.")
     private String password;
 
     private String phone;
